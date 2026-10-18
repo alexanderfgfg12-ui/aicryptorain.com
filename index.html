@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Crypto Rain | Gateway</title>
-    <!-- 🛠️ تم إصلاح رابط السكريبت الرسمي الصحيح لتشغيل الودجت هنا -->
+    <title>AI Crypto Rain</title>
+    <!-- استدعاء سكريبت بينانص الرسمي لتشغيل الودجت بأمان -->
     <script src="https://bnbstatic.com" defer></script>
     <style>
         :root { 
@@ -22,36 +22,34 @@
             text-align: center; 
             margin: 0; 
             padding: 40px 20px; 
-            background-image: radial-gradient(circle at top right, rgba(0, 119, 255, 0.1), transparent 400px), radial-gradient(circle at bottom left, rgba(0, 255, 204, 0.05), transparent 400px);
+            background-image: radial-gradient(circle at top right, rgba(0, 119, 255, 0.1), transparent 400px);
             background-attachment: fixed;
         }
         .container { max-width: 600px; margin: 0 auto; }
         
-        /* شريط اختيار اللغات العصري */
+        /* شريط اللغات */
         .lang-bar { background: rgba(31, 41, 61, 0.4); backdrop-filter: blur(10px); padding: 6px; border-radius: 30px; display: inline-flex; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 30px; }
         .lang-btn { background: transparent; color: var(--text-muted); border: none; padding: 8px 20px; cursor: pointer; border-radius: 20px; font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease; }
         .lang-btn.active, .lang-btn:hover { background: linear-gradient(135deg, #00ffcc, #0077ff); color: #0b0f19; box-shadow: 0 4px 12px var(--accent-glow); }
         
-        h1 { font-size: 2.8rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 10px; background: linear-gradient(135deg, #00ffcc, #0077ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h1 { font-size: 2.8rem; font-weight: 800; margin-bottom: 10px; background: linear-gradient(135deg, #00ffcc, #0077ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .tagline { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 40px; }
         
-        /* البطاقات الاحترافية بتأثير زجاجي */
-        .card { background: rgba(21, 29, 48, 0.7); backdrop-filter: blur(10px); border-radius: 16px; padding: 30px; margin: 25px 0; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: right; transition: transform 0.3s ease; }
+        /* بطاقة العرض */
+        .card { background: rgba(21, 29, 48, 0.7); backdrop-filter: blur(10px); border-radius: 16px; padding: 30px; margin: 25px 0; border: 1px solid rgba(255,255,255,0.05); text-align: right; }
         body[dir="ltr"] .card { text-align: left; }
-        .card:hover { transform: translateY(-4px); border-color: rgba(0, 255, 204, 0.3); }
-        .card h3 { margin: 0 0 10px 0; font-size: 1.3rem; font-weight: 700; }
+        .card h3 { margin: 0 0 10px 0; font-size: 1.3rem; }
         
-        /* أزرار السيبربانك النيون */
-        .btn { background: linear-gradient(135deg, #00ffcc, #0077ff); color: #0b0f19; padding: 12px 30px; border-radius: 30px; text-decoration: none; font-weight: 700; display: inline-block; margin-top: 15px; box-shadow: 0 4px 20px var(--accent-glow); transition: all 0.3s ease; }
-        .btn:hover { transform: scale(1.03); box-shadow: 0 6px 25px rgba(0, 255, 204, 0.5); }
+        .btn { background: linear-gradient(135deg, #00ffcc, #0077ff); color: #0b0f19; padding: 12px 30px; border-radius: 30px; text-decoration: none; font-weight: 700; display: inline-block; margin-top: 15px; box-shadow: 0 4px 20px var(--accent-glow); }
         
-        .widget-box { background: rgba(21, 29, 48, 0.7); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); padding: 10px; margin-top: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        /* حاوية الودجت */
+        .widget-box { background: rgba(21, 29, 48, 0.7); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); padding: 15px; margin-top: 30px; }
         footer { margin-top: 60px; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- لوحة التحكم باللغات المستجيبة -->
+        <!-- أزرار تبديل اللغات -->
         <div class="lang-bar">
             <button id="btn-ar" class="lang-btn active" onclick="setLang('ar')">العربية</button>
             <button id="btn-en" class="lang-btn" onclick="setLang('en')">English</button>
@@ -63,14 +61,29 @@
 
         <div class="card">
             <h3 id="card-title">أنشئ حساب تداول محترف على Binance</h3>
-            <!-- 🔗 تم إدراج رابط الإحالة الخاص بك هنا بدلاً من الرابط الأعمى القديم -->
             <a href="https://binance.com" target="_blank" class="btn" id="card-btn">سجل مجاناً الآن</a>
         </div>
 
         <div class="widget-box">
             <div id="binance-widget-container">
-                <!-- الودجت المبدئي الموثوق برابط إحالتك والوضع المظلم الشفاف -->
-                <div class="binance-converter-widget" data-locale="ar" data-coin="BTC" data-fiat="USD" data-theme="dark" data-transparent="true" data-show-cta="true" data-referral-code="1038345380" data-width="100%"></div>
+                <!-- تم دمج كود الودجت الخاص بك هنا بشكل متناسق ومربوط بحسابك -->
+                <div class="binance-converter-widget" 
+                     data-locale="ar" 
+                     data-coin="BTC" 
+                     data-fiat="USD" 
+                     data-width="100%" 
+                     data-theme="dark" 
+                     data-transparent="false" 
+                     data-show-cta="true" 
+                     data-cta-text="شراء {{coin}}" 
+                     data-widget-title="محوّل {{coin}} إلى {{currency}}" 
+                     data-coin-label="العملة" 
+                     data-currency-label="العملة" 
+                     data-referral-code="1038345380" 
+                     data-powered-by="مُشغّل من قِبل" 
+                     data-disclaimer="إخلاء المسؤولية" 
+                     data-utm-source="aicryptorain">
+                </div>
             </div>
         </div>
 
@@ -79,9 +92,9 @@
 
     <script>
         const data = {
-            ar: { title: "AI Crypto Rain 🌧️🤖", tag: "بوابتك الذكية لتداول وتحويل العملات الرقمية بأقل الرسوم.", cTitle: "أنشئ حساب تداول محترف على Binance", cBtn: "سجل مجاناً الآن", dir: "rtl" },
-            en: { title: "AI Crypto Rain 🌧️🤖", tag: "Your smart gateway to trade and convert crypto with the lowest fees.", cTitle: "Create a Professional Trading Account on Binance", cBtn: "Register Now Free", dir: "ltr" },
-            fr: { title: "AI Crypto Rain 🌧️🤖", tag: "Votre passerelle intelligente pour échanger du crypto aux frais les plus bas.", cTitle: "Créer un compte de trading pro sur Binance", cBtn: "S'inscrire Gratuitement", dir: "ltr" }
+            ar: { title: "AI Crypto Rain 🌧️🤖", tag: "بوابتك الذكية لتداول وتحويل العملات الرقمية بأقل الرسوم.", cTitle: "أنشئ حساب تداول محترف على Binance", cBtn: "سجل مجاناً الآن", cta: "شراء {{coin}}", wTitle: "محوّل {{coin}} إلى {{currency}}", coinL: "العملة", fiatL: "العملة", pBy: "مُشغّل من قِبل", disc: "إخلاء المسؤولية", dir: "rtl" },
+            en: { title: "AI Crypto Rain 🌧️🤖", tag: "Your smart gateway to trade and convert crypto with the lowest fees.", cTitle: "Create a Professional Trading Account on Binance", cBtn: "Register Now Free", cta: "Buy {{coin}}", wTitle: "Convert {{coin}} to {{currency}}", coinL: "Coin", fiatL: "Fiat", pBy: "Powered by", disc: "Disclaimer", dir: "ltr" },
+            fr: { title: "AI Crypto Rain 🌧️🤖", tag: "Votre passerelle intelligente pour échanger du crypto aux frais les plus bas.", cTitle: "Créer un compte de trading pro sur Binance", cBtn: "S'inscrire Gratuitement", cta: "Acheter {{coin}}", wTitle: "Convertir {{coin}} en {{currency}}", coinL: "Crypto", fiatL: "Fiat", pBy: "Propulsé par", disc: "Avertissement", dir: "ltr" }
         };
 
         function setLang(lang) {
@@ -92,13 +105,27 @@
             document.getElementById('card-title').innerText = data[lang].cTitle;
             document.getElementById('card-btn').innerText = data[lang].cBtn;
             
-            // تحديث تصميم فئات الأزرار النشطة للغات
             document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('btn-' + lang).classList.add('active');
             
-            // تدمير وإعادة تحميل الودجت اللغوي ديناميكياً لضمان التوافق مع السياسات الأمنية لـ GitHub
+            // تحديث لغة ونصوص الودجت ديناميكياً لتتوافق مع اختيار الزائر
             const container = document.getElementById('binance-widget-container');
-            container.innerHTML = `<div class="binance-converter-widget" data-locale="${lang}" data-coin="BTC" data-fiat="USD" data-theme="dark" data-transparent="true" data-show-cta="true" data-referral-code="1038345380" data-width="100%"></div>`;
+            container.innerHTML = `<div class="binance-converter-widget" 
+                data-locale="${lang}" 
+                data-coin="BTC" 
+                data-fiat="USD" 
+                data-theme="dark" 
+                data-transparent="false" 
+                data-show-cta="true" 
+                data-cta-text="${data[lang].cta}" 
+                data-widget-title="${data[lang].wTitle}" 
+                data-coin-label="${data[lang].coinL}" 
+                data-currency-label="${data[lang].fiatL}" 
+                data-referral-code="1038345380" 
+                data-powered-by="${data[lang].pBy}" 
+                data-disclaimer="${data[lang].disc}" 
+                data-width="100%"
+                data-utm-source="aicryptorain"></div>`;
             
             if(window.cryptoConverterWidget && window.cryptoConverterWidget.init) { 
                 window.cryptoConverterWidget.init(); 
