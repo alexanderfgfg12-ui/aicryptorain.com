@@ -3,174 +3,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Crypto Rain</title>
-    <!-- Binance Crypto Converter Widget - Official Script -->
+    <title>AI Crypto Rain — أخبار وتحويلات العملات الرقمية</title>
+    <!-- Binance Crypto Converter Widget -->
     <script src="https://public.bnbstatic.com/unpkg/growth-external-widget/cryptoConverterWidget@0.1.0.min.js" defer></script>
     <style>
-        :root { 
-            --bg: #000000; 
-            --card: #111111; 
-            --accent: #FFD700; 
-            --accent-glow: rgba(255, 215, 0, 0.3);
-            --text: #ffffff; 
-            --text-muted: #b0b0b0;
-            --border: #333333;
+        :root {
+            --bg: #000000;
+            --card: #0d0d0d;
+            --card-hover: #141414;
+            --accent: #FFD700;
+            --accent-glow: rgba(255, 215, 0, 0.25);
+            --text: #f5f5f5;
+            --text-muted: #888888;
+            --border: #1f1f1f;
+            --success: #22c55e;
+            --radius: 16px;
         }
-        * { box-sizing: border-box; }
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: var(--bg); 
-            color: var(--text); 
-            text-align: center; 
-            margin: 0; 
-            padding: 40px 20px; 
-            background-image: radial-gradient(circle at top right, rgba(255, 215, 0, 0.08), transparent 500px);
-            background-attachment: fixed;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            text-align: center;
+            padding: 32px 20px 60px;
             min-height: 100vh;
+            background-image: radial-gradient(circle at 80% 0%, rgba(255, 215, 0, 0.06), transparent 500px);
+            background-attachment: fixed;
+            line-height: 1.6;
         }
-        .container { max-width: 650px; margin: 0 auto; }
-        
-        /* Language Bar */
-        .lang-bar { 
-            background: #1a1a1a; 
-            backdrop-filter: blur(10px); 
-            padding: 6px; 
-            border-radius: 30px; 
-            display: inline-flex; 
+        .container { max-width: 680px; margin: 0 auto; }
+
+        /* ---- Language Bar ---- */
+        .lang-bar {
+            background: #111;
+            padding: 5px;
+            border-radius: 40px;
+            display: inline-flex;
             flex-wrap: wrap;
             justify-content: center;
-            border: 1px solid var(--border); 
-            margin-bottom: 30px; 
-            gap: 4px;
+            border: 1px solid var(--border);
+            margin-bottom: 32px;
+            gap: 3px;
         }
-        .lang-btn { 
-            background: transparent; 
-            color: var(--text-muted); 
-            border: none; 
-            padding: 6px 12px; 
-            cursor: pointer; 
-            border-radius: 20px; 
-            font-weight: 600; 
-            font-size: 0.8rem; 
-            transition: all 0.3s ease; 
+        .lang-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 7px 14px;
+            cursor: pointer;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            transition: all 0.25s ease;
             font-family: inherit;
+            white-space: nowrap;
         }
-        .lang-btn.active, .lang-btn:hover { 
-            background: linear-gradient(135deg, #FFD700, #FFA500); 
-            color: #000000; 
-            box-shadow: 0 4px 12px var(--accent-glow); 
+        .lang-btn.active, .lang-btn:hover {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            box-shadow: 0 2px 12px var(--accent-glow);
         }
-        
-        h1 { 
-            font-size: 2.8rem; 
-            font-weight: 800; 
-            margin-bottom: 10px; 
-            background: linear-gradient(135deg, #FFD700, #FFA500); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
+
+        /* ---- Hero ---- */
+        h1 {
+            font-size: 2.6rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             background-clip: text;
+            animation: shimmer 3s linear infinite;
         }
-        .tagline { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 40px; }
-        
-        /* Card */
-        .card { 
-            background: var(--card); 
-            border-radius: 16px; 
-            padding: 30px; 
-            margin: 25px 0; 
-            border: 1px solid var(--border); 
-            text-align: right; 
+        @keyframes shimmer { to { background-position: 200% center; } }
+        .tagline {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            margin-bottom: 36px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ---- Card ---- */
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 28px;
+            margin: 20px 0;
+            border: 1px solid var(--border);
+            text-align: right;
+            transition: border-color 0.2s;
         }
         body[dir="ltr"] .card { text-align: left; }
-        .card h3 { margin: 0 0 10px 0; font-size: 1.3rem; color: var(--accent); }
-        
-        .btn { 
-            background: linear-gradient(135deg, #FFD700, #FFA500); 
-            color: #000000; 
-            padding: 12px 30px; 
-            border-radius: 30px; 
-            text-decoration: none; 
-            font-weight: 700; 
-            display: inline-block; 
-            margin-top: 15px; 
-            box-shadow: 0 4px 20px var(--accent-glow); 
-            transition: transform 0.2s;
-        }
-        .btn:hover { transform: scale(1.03); }
-        
-        /* Widget Containers */
-        .widget-box, .ops-widget { 
-            background: var(--card); 
-            border-radius: 16px; 
-            border: 1px solid var(--border); 
-            padding: 20px; 
-            margin-top: 30px; 
-        }
-        
-        /* Operations Widget */
-        .ops-widget { text-align: right; }
-        body[dir="ltr"] .ops-widget { text-align: left; }
-        .ops-widget h3 {
+        .card:hover { border-color: #2a2a2a; }
+        .card h3 {
+            font-size: 1.15rem;
+            margin-bottom: 12px;
             color: var(--accent);
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            padding: 13px 36px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: inline-block;
+            margin-top: 16px;
+            box-shadow: 0 4px 20px var(--accent-glow);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 28px var(--accent-glow); }
+        .btn:active { transform: translateY(0); }
+
+        /* ---- Widgets ---- */
+        .widget-box {
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 18px;
+            margin-top: 24px;
+            overflow: hidden;
+        }
+
+        /* ---- Newsletter ---- */
+        .newsletter-section {
+            background: linear-gradient(145deg, #0d0d0d, #111);
+            border-radius: var(--radius);
+            border: 1px solid #2a2a2a;
+            padding: 32px 28px;
+            margin-top: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+        .newsletter-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(255, 215, 0, 0.04), transparent 60%);
+            pointer-events: none;
+        }
+        .newsletter-section h3 {
+            color: var(--accent);
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        .newsletter-desc {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .newsletter-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            position: relative;
+        }
+        .newsletter-form input[type="email"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 13px 18px;
+            border-radius: 40px;
+            border: 1px solid #333;
+            background: #000;
+            color: var(--text);
+            font-size: 0.9rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .newsletter-form input[type="email"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .newsletter-form input[type="email"]::placeholder { color: #555; }
+        .newsletter-form .btn { margin-top: 0; padding: 13px 28px; }
+        .newsletter-status {
+            margin-top: 14px;
+            font-size: 0.85rem;
+            min-height: 20px;
+            position: relative;
+        }
+        .newsletter-status.success { color: var(--success); }
+        .newsletter-status.error { color: #ef4444; }
+
+        /* ---- News Widget (RSS) ---- */
+        .news-widget {
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 24px;
+            margin-top: 24px;
+            text-align: right;
+        }
+        body[dir="ltr"] .news-widget { text-align: left; }
+        .news-widget h3 {
+            color: var(--accent);
+            font-size: 1.1rem;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .ops-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .ops-list li {
-            padding: 12px 10px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .news-list { list-style: none; }
+        .news-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #1a1a1a;
             font-size: 0.9rem;
         }
-        .ops-list li:last-child { border-bottom: none; }
-        .ops-badge {
-            background: var(--accent);
-            color: #000;
-            padding: 3px 10px;
-            border-radius: 10px;
-            font-size: 0.75rem;
-            font-weight: bold;
+        .news-list li:last-child { border-bottom: none; }
+        .news-list a {
+            color: var(--text);
+            text-decoration: none;
+            display: block;
+            transition: color 0.2s;
         }
-        .ops-badge.pending {
-            background: #FFA500;
+        .news-list a:hover { color: var(--accent); }
+        .news-source {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 4px;
         }
-        .ops-placeholder-text {
+        .news-loading, .news-error {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 20px;
+        }
+
+        footer {
+            margin-top: 48px;
             color: var(--text-muted);
             font-size: 0.8rem;
-            font-style: italic;
-            text-align: center;
-            padding: 12px 5px 0 5px;
-            margin-top: 10px;
-            border-top: 1px dashed var(--border);
+            border-top: 1px solid var(--border);
+            padding-top: 24px;
         }
-        
-        footer { 
-            margin-top: 60px; 
-            color: var(--text-muted); 
-            font-size: 0.85rem; 
-            border-top: 1px solid var(--border); 
-            padding-top: 20px; 
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.9rem; }
+            .card { padding: 20px; }
+            .newsletter-section { padding: 24px 18px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Language Buttons -->
+        <!-- Language Bar -->
         <div class="lang-bar" id="lang-bar"></div>
 
         <h1 id="title">AI Crypto Rain 🌧️🤖</h1>
         <p id="tagline" class="tagline">بوابتك الذكية لتداول وتحويل العملات الرقمية بأقل الرسوم.</p>
 
+        <!-- CTA Card -->
         <div class="card">
             <h3 id="card-title">أنشئ حساب تداول محترف على Binance</h3>
             <a href="https://www.binance.com/ar/register?ref=1038345380" target="_blank" rel="noopener" class="btn" id="card-btn">سجل مجاناً الآن</a>
@@ -181,45 +281,51 @@
             <div id="binance-widget-container"></div>
         </div>
 
-        <!-- Operations Widget (Placeholder) -->
-        <div class="ops-widget">
-            <h3>📊 <span id="ops-title">آخر العمليات</span></h3>
-            <ul class="ops-list" id="ops-list">
-                <li><span>شراء BTC</span> <span class="ops-badge">مكتمل</span></li>
-                <li><span>تحويل ETH</span> <span class="ops-badge pending">قيد التنفيذ</span></li>
-                <li><span>بيع USDT</span> <span class="ops-badge">مكتمل</span></li>
+        <!-- News Widget (RSS from Google News) -->
+        <div class="news-widget">
+            <h3>📰 <span id="news-title">آخر أخبار العملات الرقمية</span></h3>
+            <ul class="news-list" id="news-list">
+                <li class="news-loading" id="news-loading">جاري تحميل الأخبار...</li>
             </ul>
-            <div class="ops-placeholder-text" id="ops-note">
-                * هذه بيانات تجريبية. يمكنك ربط هذه الحاوية بواجهة API الخاصة بك لعرض العمليات الحقيقية.
-            </div>
         </div>
 
-        <footer>&copy; 2026 aicryptorain.com - جميع الحقوق محفوظة.</footer>
+        <!-- Newsletter Subscription -->
+        <div class="newsletter-section">
+            <h3 id="newsletter-title">📬 اشترك في النشرة البريدية</h3>
+            <p class="newsletter-desc" id="newsletter-desc">احصل على آخر الأخبار والتحليلات مباشرة إلى بريدك الإلكتروني.</p>
+            <form class="newsletter-form" id="newsletter-form">
+                <input type="email" id="newsletter-email" placeholder="بريدك الإلكتروني (Gmail)" required>
+                <button type="submit" class="btn" id="newsletter-btn">اشترك</button>
+            </form>
+            <div class="newsletter-status" id="newsletter-status"></div>
+        </div>
+
+        <footer>&copy; 2026 aicryptorain.com — جميع الحقوق محفوظة.</footer>
     </div>
 
     <script>
-        // Language data
+        /* ============================================================
+           1. LANGUAGE DATA (10 languages)
+           ============================================================ */
         const data = {
-            ar: { title: "AI Crypto Rain 🌧️🤖", tag: "بوابتك الذكية لتداول وتحويل العملات الرقمية بأقل الرسوم.", cTitle: "أنشئ حساب تداول محترف على Binance", cBtn: "سجل مجاناً الآن", cta: "شراء {{coin}}", wTitle: "محوّل {{coin}} إلى {{currency}}", coinL: "العملة", fiatL: "العملة", pBy: "مُشغّل من قِبل", disc: "إخلاء المسؤولية", dir: "rtl", opsTitle: "آخر العمليات", opsNote: "* هذه بيانات تجريبية. يمكنك ربط هذه الحاوية بواجهة API الخاصة بك لعرض العمليات الحقيقية." },
-            en: { title: "AI Crypto Rain 🌧️🤖", tag: "Your smart gateway to trade and convert crypto with the lowest fees.", cTitle: "Create a Professional Trading Account on Binance", cBtn: "Register Now Free", cta: "Buy {{coin}}", wTitle: "Convert {{coin}} to {{currency}}", coinL: "Coin", fiatL: "Fiat", pBy: "Powered by", disc: "Disclaimer", dir: "ltr", opsTitle: "Recent Operations", opsNote: "* Demo data. You can connect this container to your API to show real operations." },
-            fr: { title: "AI Crypto Rain 🌧️🤖", tag: "Votre passerelle intelligente pour échanger du crypto aux frais les plus bas.", cTitle: "Créer un compte de trading pro sur Binance", cBtn: "S'inscrire Gratuitement", cta: "Acheter {{coin}}", wTitle: "Convertir {{coin}} en {{currency}}", coinL: "Crypto", fiatL: "Fiat", pBy: "Propulsé par", disc: "Avertissement", dir: "ltr", opsTitle: "Opérations Récentes", opsNote: "* Données de démo. Connectez ce conteneur à votre API pour afficher les opérations réelles." },
-            es: { title: "AI Crypto Rain 🌧️🤖", tag: "Tu puerta de entrada inteligente para operar y convertir cripto con las tarifas más bajas.", cTitle: "Crea una cuenta de trading profesional en Binance", cBtn: "Regístrate Gratis Ahora", cta: "Comprar {{coin}}", wTitle: "Convertir {{coin}} a {{currency}}", coinL: "Moneda", fiatL: "Fiat", pBy: "Desarrollado por", disc: "Aviso legal", dir: "ltr", opsTitle: "Operaciones Recientes", opsNote: "* Datos de demostración. Conecta este contenedor a tu API para mostrar operaciones reales." },
-            de: { title: "AI Crypto Rain 🌧️🤖", tag: "Ihr intelligentes Gateway für den Handel und Umtausch von Krypto zu niedrigsten Gebühren.", cTitle: "Erstellen Sie ein professionelles Trading-Konto bei Binance", cBtn: "Jetzt kostenlos registrieren", cta: "{{coin}} kaufen", wTitle: "{{coin}} in {{currency}} umrechnen", coinL: "Coin", fiatL: "Fiat", pBy: "Bereitgestellt von", disc: "Haftungsausschluss", dir: "ltr", opsTitle: "Letzte Operationen", opsNote: "* Demo-Daten. Verbinden Sie diesen Container mit Ihrer API, um echte Operationen anzuzeigen." },
-            zh: { title: "AI Crypto Rain 🌧️🤖", tag: "您以最低费用交易和兑换加密货币的智能门户。", cTitle: "在币安创建专业交易账户", cBtn: "立即免费注册", cta: "购买 {{coin}}", wTitle: "将 {{coin}} 兑换为 {{currency}}", coinL: "币种", fiatL: "法币", pBy: "提供方", disc: "免责声明", dir: "ltr", opsTitle: "最近操作", opsNote: "* 演示数据。您可以将此容器连接到您的 API 以显示真实操作。" },
-            ja: { title: "AI Crypto Rain 🌧️🤖", tag: "最低手数料で暗号資産を取引・換金するスマートゲートウェイ。", cTitle: "Binanceでプロの取引アカウントを作成", cBtn: "今すぐ無料登録", cta: "{{coin}}を購入", wTitle: "{{coin}}を{{currency}}に換算", coinL: "コイン", fiatL: "法定通貨", pBy: "提供", disc: "免責事項", dir: "ltr", opsTitle: "最近の操作", opsNote: "* デモデータです。このコンテナをAPIに接続して実際の操作を表示できます。" },
-            ko: { title: "AI Crypto Rain 🌧️🤖", tag: "최저 수수료로 암호화폐를 거래하고 변환하는 스마트 게이트웨이.", cTitle: "Binance에서 전문 트레이딩 계정 생성", cBtn: "지금 무료로 등록", cta: "{{coin}} 구매", wTitle: "{{coin}}을 {{currency}}로 변환", coinL: "코인", fiatL: "법정화폐", pBy: "제공", disc: "면책 조항", dir: "ltr", opsTitle: "최근 작업", opsNote: "* 데모 데이터입니다. 이 컨테이너를 API에 연결하여 실제 작업을 표시할 수 있습니다." },
-            ru: { title: "AI Crypto Rain 🌧️🤖", tag: "Ваш умный шлюз для торговли и обмена криптовалютой с минимальными комиссиями.", cTitle: "Создайте профессиональный торговый аккаунт на Binance", cBtn: "Зарегистрироваться бесплатно", cta: "Купить {{coin}}", wTitle: "Конвертировать {{coin}} в {{currency}}", coinL: "Монета", fiatL: "Фиат", pBy: "При поддержке", disc: "Отказ от ответственности", dir: "ltr", opsTitle: "Последние операции", opsNote: "* Демо-данные. Вы можете подключить этот контейнер к своему API для отображения реальных операций." },
-            pt: { title: "AI Crypto Rain 🌧️🤖", tag: "Seu gateway inteligente para negociar e converter cripto com as menores taxas.", cTitle: "Crie uma conta de trading profissional na Binance", cBtn: "Registre-se Grátis Agora", cta: "Comprar {{coin}}", wTitle: "Converter {{coin}} para {{currency}}", coinL: "Moeda", fiatL: "Fiat", pBy: "Desenvolvido por", disc: "Aviso legal", dir: "ltr", opsTitle: "Operações Recentes", opsNote: "* Dados de demonstração. Conecte este contêiner à sua API para mostrar operações reais." }
+            ar: { title: "AI Crypto Rain 🌧️🤖", tag: "بوابتك الذكية لتداول وتحويل العملات الرقمية بأقل الرسوم.", cTitle: "أنشئ حساب تداول محترف على Binance", cBtn: "سجل مجاناً الآن", cta: "شراء {{coin}}", wTitle: "محوّل {{coin}} إلى {{currency}}", coinL: "العملة", fiatL: "العملة", pBy: "مُشغّل من قِبل", disc: "إخلاء المسؤولية", dir: "rtl", newsTitle: "آخر أخبار العملات الرقمية", newsletterTitle: "📬 اشترك في النشرة البريدية", newsletterDesc: "احصل على آخر الأخبار والتحليلات مباشرة إلى بريدك الإلكتروني.", placeholder: "بريدك الإلكتروني (Gmail)", subscribe: "اشترك", subscribing: "جاري الاشتراك...", subSuccess: "✅ تم الاشتراك بنجاح! تحقق من بريدك.", subError: "❌ حدث خطأ. حاول مرة أخرى." },
+            en: { title: "AI Crypto Rain 🌧️🤖", tag: "Your smart gateway to trade and convert crypto with the lowest fees.", cTitle: "Create a Professional Trading Account on Binance", cBtn: "Register Now Free", cta: "Buy {{coin}}", wTitle: "Convert {{coin}} to {{currency}}", coinL: "Coin", fiatL: "Fiat", pBy: "Powered by", disc: "Disclaimer", dir: "ltr", newsTitle: "Latest Crypto News", newsletterTitle: "📬 Subscribe to Newsletter", newsletterDesc: "Get the latest news and analysis delivered to your inbox.", placeholder: "Your email (Gmail)", subscribe: "Subscribe", subscribing: "Subscribing...", subSuccess: "✅ Subscribed successfully! Check your inbox.", subError: "❌ Something went wrong. Please try again." },
+            fr: { title: "AI Crypto Rain 🌧️🤖", tag: "Votre passerelle intelligente pour échanger du crypto aux frais les plus bas.", cTitle: "Créer un compte de trading pro sur Binance", cBtn: "S'inscrire Gratuitement", cta: "Acheter {{coin}}", wTitle: "Convertir {{coin}} en {{currency}}", coinL: "Crypto", fiatL: "Fiat", pBy: "Propulsé par", disc: "Avertissement", dir: "ltr", newsTitle: "Dernières actualités crypto", newsletterTitle: "📬 Abonnez-vous à la newsletter", newsletterDesc: "Recevez les dernières actualités et analyses dans votre boîte mail.", placeholder: "Votre email (Gmail)", subscribe: "S'abonner", subscribing: "Abonnement...", subSuccess: "✅ Abonnement réussi ! Vérifiez votre boîte.", subError: "❌ Une erreur est survenue. Réessayez." },
+            es: { title: "AI Crypto Rain 🌧️🤖", tag: "Tu puerta de entrada inteligente para operar y convertir cripto con las tarifas más bajas.", cTitle: "Crea una cuenta de trading profesional en Binance", cBtn: "Regístrate Gratis Ahora", cta: "Comprar {{coin}}", wTitle: "Convertir {{coin}} a {{currency}}", coinL: "Moneda", fiatL: "Fiat", pBy: "Desarrollado por", disc: "Aviso legal", dir: "ltr", newsTitle: "Últimas noticias crypto", newsletterTitle: "📬 Suscríbete al boletín", newsletterDesc: "Recibe las últimas noticias y análisis en tu correo.", placeholder: "Tu correo (Gmail)", subscribe: "Suscribirse", subscribing: "Suscribiendo...", subSuccess: "✅ ¡Suscrito con éxito! Revisa tu correo.", subError: "❌ Algo salió mal. Inténtalo de nuevo." },
+            de: { title: "AI Crypto Rain 🌧️🤖", tag: "Ihr intelligentes Gateway für den Handel und Umtausch von Krypto zu niedrigsten Gebühren.", cTitle: "Erstellen Sie ein professionelles Trading-Konto bei Binance", cBtn: "Jetzt kostenlos registrieren", cta: "{{coin}} kaufen", wTitle: "{{coin}} in {{currency}} umrechnen", coinL: "Coin", fiatL: "Fiat", pBy: "Bereitgestellt von", disc: "Haftungsausschluss", dir: "ltr", newsTitle: "Neueste Krypto-News", newsletterTitle: "📬 Newsletter abonnieren", newsletterDesc: "Erhalten Sie die neuesten Nachrichten und Analysen in Ihr Postfach.", placeholder: "Ihre E-Mail (Gmail)", subscribe: "Abonnieren", subscribing: "Abonnieren...", subSuccess: "✅ Erfolgreich abonniert! Prüfen Sie Ihr Postfach.", subError: "❌ Ein Fehler ist aufgetreten. Versuchen Sie es erneut." },
+            zh: { title: "AI Crypto Rain 🌧️🤖", tag: "您以最低费用交易和兑换加密货币的智能门户。", cTitle: "在币安创建专业交易账户", cBtn: "立即免费注册", cta: "购买 {{coin}}", wTitle: "将 {{coin}} 兑换为 {{currency}}", coinL: "币种", fiatL: "法币", pBy: "提供方", disc: "免责声明", dir: "ltr", newsTitle: "最新加密货币新闻", newsletterTitle: "📬 订阅新闻通讯", newsletterDesc: "将最新新闻和分析发送到您的邮箱。", placeholder: "您的邮箱 (Gmail)", subscribe: "订阅", subscribing: "订阅中...", subSuccess: "✅ 订阅成功！请查收邮件。", subError: "❌ 出错了，请重试。" },
+            ja: { title: "AI Crypto Rain 🌧️🤖", tag: "最低手数料で暗号資産を取引・換金するスマートゲートウェイ。", cTitle: "Binanceでプロの取引アカウントを作成", cBtn: "今すぐ無料登録", cta: "{{coin}}を購入", wTitle: "{{coin}}を{{currency}}に換算", coinL: "コイン", fiatL: "法定通貨", pBy: "提供", disc: "免責事項", dir: "ltr", newsTitle: "最新の暗号資産ニュース", newsletterTitle: "📬 ニュースレターを購読", newsletterDesc: "最新ニュースと分析をメールでお届けします。", placeholder: "メールアドレス (Gmail)", subscribe: "購読する", subscribing: "購読中...", subSuccess: "✅ 購読完了！メールをご確認ください。", subError: "❌ エラーが発生しました。もう一度お試しください。" },
+            ko: { title: "AI Crypto Rain 🌧️🤖", tag: "최저 수수료로 암호화폐를 거래하고 변환하는 스마트 게이트웨이.", cTitle: "Binance에서 전문 트레이딩 계정 생성", cBtn: "지금 무료로 등록", cta: "{{coin}} 구매", wTitle: "{{coin}}을 {{currency}}로 변환", coinL: "코인", fiatL: "법정화폐", pBy: "제공", disc: "면책 조항", dir: "ltr", newsTitle: "최신 암호화폐 뉴스", newsletterTitle: "📬 뉴스레터 구독", newsletterDesc: "최신 뉴스와 분석을 이메일로 받아보세요.", placeholder: "이메일 (Gmail)", subscribe: "구독하기", subscribing: "구독 중...", subSuccess: "✅ 구독 완료! 이메일을 확인하세요.", subError: "❌ 오류가 발생했습니다. 다시 시도해주세요." },
+            ru: { title: "AI Crypto Rain 🌧️🤖", tag: "Ваш умный шлюз для торговли и обмена криптовалютой с минимальными комиссиями.", cTitle: "Создайте профессиональный торговый аккаунт на Binance", cBtn: "Зарегистрироваться бесплатно", cta: "Купить {{coin}}", wTitle: "Конвертировать {{coin}} в {{currency}}", coinL: "Монета", fiatL: "Фиат", pBy: "При поддержке", disc: "Отказ от ответственности", dir: "ltr", newsTitle: "Последние крипто-новости", newsletterTitle: "📬 Подписаться на рассылку", newsletterDesc: "Получайте последние новости и аналитику на вашу почту.", placeholder: "Ваш email (Gmail)", subscribe: "Подписаться", subscribing: "Подписка...", subSuccess: "✅ Подписка оформлена! Проверьте почту.", subError: "❌ Произошла ошибка. Попробуйте снова." },
+            pt: { title: "AI Crypto Rain 🌧️🤖", tag: "Seu gateway inteligente para negociar e converter cripto com as menores taxas.", cTitle: "Crie uma conta de trading profissional na Binance", cBtn: "Registre-se Grátis Agora", cta: "Comprar {{coin}}", wTitle: "Converter {{coin}} para {{currency}}", coinL: "Moeda", fiatL: "Fiat", pBy: "Desenvolvido por", disc: "Aviso legal", dir: "ltr", newsTitle: "Últimas notícias crypto", newsletterTitle: "📬 Assine a newsletter", newsletterDesc: "Receba as últimas notícias e análises no seu e-mail.", placeholder: "Seu email (Gmail)", subscribe: "Assinar", subscribing: "Assinando...", subSuccess: "✅ Assinatura realizada! Verifique seu e-mail.", subError: "❌ Algo deu errado. Tente novamente." }
         };
 
-        const langNames = {
-            ar: "العربية", en: "English", fr: "Français", es: "Español", de: "Deutsch",
-            zh: "中文", ja: "日本語", ko: "한국어", ru: "Русский", pt: "Português"
-        };
-
+        const langNames = { ar: "العربية", en: "English", fr: "Français", es: "Español", de: "Deutsch", zh: "中文", ja: "日本語", ko: "한국어", ru: "Русский", pt: "Português" };
         let currentLang = 'ar';
 
-        // Build language buttons
+        /* ============================================================
+           2. BUILD LANGUAGE BAR & SWITCH
+           ============================================================ */
         function buildLangBar() {
             const bar = document.getElementById('lang-bar');
             bar.innerHTML = '';
@@ -227,63 +333,152 @@
                 const btn = document.createElement('button');
                 btn.className = 'lang-btn' + (code === currentLang ? ' active' : '');
                 btn.id = 'btn-' + code;
-                btn.innerText = langNames[code];
+                btn.textContent = langNames[code];
                 btn.onclick = () => setLang(code);
                 bar.appendChild(btn);
             });
         }
 
-        // Render Binance widget with current language settings
-        function renderWidget(lang) {
-            const d = data[lang];
-            const container = document.getElementById('binance-widget-container');
-            container.innerHTML = `<div class="binance-converter-widget" 
-                data-locale="${lang}" 
-                data-coin="BTC" 
-                data-fiat="USD" 
-                data-width="100%" 
-                data-theme="dark" 
-                data-transparent="false" 
-                data-show-cta="true" 
-                data-cta-text="${d.cta}" 
-                data-widget-title="${d.wTitle}" 
-                data-coin-label="${d.coinL}" 
-                data-currency-label="${d.fiatL}" 
-                data-referral-code="1038345380" 
-                data-powered-by="${d.pBy}" 
-                data-disclaimer="${d.disc}" 
-                data-utm-source="aicryptorain"></div>`;
-            
-            // Re-initialize widget if the SDK exposes an init function
-            if (window.cryptoConverterWidget && typeof window.cryptoConverterWidget.init === 'function') {
-                try { window.cryptoConverterWidget.init(); } catch(e) { console.warn('Widget init:', e); }
-            }
-        }
-
-        // Change language
         function setLang(lang) {
             currentLang = lang;
             const d = data[lang];
-            
             document.documentElement.lang = lang;
             document.body.setAttribute('dir', d.dir);
-            document.getElementById('title').innerText = d.title;
-            document.getElementById('tagline').innerText = d.tag;
-            document.getElementById('card-title').innerText = d.cTitle;
-            document.getElementById('card-btn').innerText = d.cBtn;
-            document.getElementById('ops-title').innerText = d.opsTitle;
-            document.getElementById('ops-note').innerText = d.opsNote;
+            document.getElementById('title').textContent = d.title;
+            document.getElementById('tagline').textContent = d.tag;
+            document.getElementById('card-title').textContent = d.cTitle;
+            document.getElementById('card-btn').textContent = d.cBtn;
+            document.getElementById('news-title').textContent = d.newsTitle;
+            document.getElementById('newsletter-title').textContent = d.newsletterTitle;
+            document.getElementById('newsletter-desc').textContent = d.newsletterDesc;
+            document.getElementById('newsletter-email').placeholder = d.placeholder;
+            document.getElementById('newsletter-btn').textContent = d.subscribe;
 
-            // Update active state
-            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
-            const activeBtn = document.getElementById('btn-' + lang);
-            if (activeBtn) activeBtn.classList.add('active');
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            const active = document.getElementById('btn-' + lang);
+            if (active) active.classList.add('active');
 
-            // Re-render widget with new language
-            renderWidget(lang);
+            renderBinanceWidget(lang);
+            loadNews(lang);
         }
 
-        // Initialize
+        /* ============================================================
+           3. BINANCE WIDGET
+           ============================================================ */
+        function renderBinanceWidget(lang) {
+            const d = data[lang];
+            const container = document.getElementById('binance-widget-container');
+            container.innerHTML = `<div class="binance-converter-widget"
+                data-locale="${lang}"
+                data-coin="BTC"
+                data-fiat="USD"
+                data-width="100%"
+                data-theme="dark"
+                data-transparent="false"
+                data-show-cta="true"
+                data-cta-text="${d.cta}"
+                data-widget-title="${d.wTitle}"
+                data-coin-label="${d.coinL}"
+                data-currency-label="${d.fiatL}"
+                data-referral-code="1038345380"
+                data-powered-by="${d.pBy}"
+                data-disclaimer="${d.disc}"
+                data-utm-source="aicryptorain"></div>`;
+            if (window.cryptoConverterWidget && typeof window.cryptoConverterWidget.init === 'function') {
+                try { window.cryptoConverterWidget.init(); } catch(e) { /* ignore */ }
+            }
+        }
+
+        /* ============================================================
+           4. NEWS WIDGET (Google News RSS via CORS proxy)
+           ============================================================ */
+        const RSS_PROXY = 'https://api.allorigins.win/raw?url=';
+        const NEWS_FEED = 'https://news.google.com/rss/search?q=cryptocurrency+bitcoin&hl=';
+
+        function loadNews(lang) {
+            const list = document.getElementById('news-list');
+            const loading = document.getElementById('news-loading');
+            list.innerHTML = '<li class="news-loading" id="news-loading">...</li>';
+            const feedUrl = NEWS_FEED + lang + '&gl=US&ceid=US:' + lang;
+            const url = RSS_PROXY + encodeURIComponent(feedUrl);
+
+            fetch(url)
+                .then(r => r.text())
+                .then(xmlText => {
+                    const parser = new DOMParser();
+                    const xml = parser.parseFromString(xmlText, 'text/xml');
+                    const items = xml.querySelectorAll('item');
+                    if (!items.length) throw new Error('No items');
+                    let html = '';
+                    const max = Math.min(5, items.length);
+                    for (let i = 0; i < max; i++) {
+                        const title = items[i].querySelector('title')?.textContent || '';
+                        const link = items[i].querySelector('link')?.textContent || '#';
+                        const source = items[i].querySelector('source')?.textContent || '';
+                        html += `<li><a href="${link}" target="_blank" rel="noopener">${title}<span class="news-source">${source}</span></a></li>`;
+                    }
+                    list.innerHTML = html;
+                })
+                .catch(() => {
+                    list.innerHTML = `<li class="news-error">${data[currentLang].subError}</li>`;
+                });
+        }
+
+        /* ============================================================
+           5. NEWSLETTER SUBSCRIPTION (Google Apps Script)
+           ============================================================
+           ⚠️ IMPORTANT: Replace the URL below with your deployed
+           Google Apps Script Web App URL.
+           See the setup instructions in the answer text.
+           ============================================================ */
+        const APPS_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
+
+        document.getElementById('newsletter-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('newsletter-email').value.trim();
+            const btn = document.getElementById('newsletter-btn');
+            const status = document.getElementById('newsletter-status');
+            const d = data[currentLang];
+
+            if (!email || !email.includes('@')) {
+                status.className = 'newsletter-status error';
+                status.textContent = d.subError;
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = d.subscribing;
+            status.className = 'newsletter-status';
+            status.textContent = '';
+
+            try {
+                const formData = new FormData();
+                formData.append('email', email);
+                formData.append('lang', currentLang);
+                formData.append('timestamp', new Date().toISOString());
+
+                const res = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'no-cors'
+                });
+
+                // With no-cors we can't read the response, assume success
+                status.className = 'newsletter-status success';
+                status.textContent = d.subSuccess;
+                document.getElementById('newsletter-email').value = '';
+            } catch (err) {
+                status.className = 'newsletter-status error';
+                status.textContent = d.subError;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = d.subscribe;
+            }
+        });
+
+        /* ============================================================
+           6. INIT
+           ============================================================ */
         document.addEventListener('DOMContentLoaded', () => {
             buildLangBar();
             setLang('ar');
