@@ -427,7 +427,7 @@
         /* ============================================================
            NEWSLETTER SUBSCRIPTION
            ============================================================ */
-        const APPS_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwIRC6FABcY9FPAFtXlT-dDE02oVlVaAYGP3_l2rq3JAQTbLvHB137jBYC9AKjSaOmA/exec';
 
         document.getElementById('newsletter-form').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -448,9 +448,6 @@
             status.textContent = '';
 
             try {
-                if (APPS_SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
-                    throw new Error('لم يتم إعداد رابط الاشتراك بعد');
-                }
                 const formData = new FormData();
                 formData.append('email', email);
                 formData.append('lang', currentLang);
