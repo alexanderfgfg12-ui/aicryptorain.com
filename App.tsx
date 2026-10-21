@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import {
-  Activity, ArrowDownRight, ArrowUpRight, Bell, BookOpen, Check, ChevronDown,
+  Activity, ArrowDownRight, ArrowUpRight, Bell, BookOpen, ChevronDown,
   CircleHelp, Globe2, LayoutDashboard, LogIn, LogOut, Menu, Newspaper,
   RefreshCw, Search, ShieldCheck, Sparkles, Star, X, Send,
 } from 'lucide-react'
