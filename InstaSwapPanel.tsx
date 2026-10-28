@@ -86,7 +86,7 @@ export default function InstaSwapPanel() {
             </div>
           )}
           <button disabled={!recipient || !refund} onClick={handleCreate} style={{ marginTop: 8 }}>
-            {phase === "creating" ? "جارٍ الإنشاء..." : "إنشاء الطلب"}
+            إنشاء الطلب
           </button>
         </div>
       )}
