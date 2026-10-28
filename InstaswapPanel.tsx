@@ -1,3 +1,8 @@
+تفضل، هذا هو النص الكامل لملف InstaSwapPanel.tsx بعد إصلاح الخطأ في السطرين 97 و 98.
+
+انسخ هذا النص بالكامل، واحذف كل ما هو موجود حالياً في الملف على GitHub، ثم الصقه واضغط Commit changes.
+
+```tsx
 // InstaSwapPanel.tsx
 import { useState } from "react";
 import { quoteLite, swapLite, swapStatusLite, InstaswapError, type QuoteResponse, type SwapResponse, type StatusResponse } from "./instaswap";
@@ -25,9 +30,7 @@ export default function InstaSwapPanel() {
         minMaxInfo: true,
       });
       setQuote(q); setPhase("quoted");
-    } catch (e: any) {
-      setError(e); setPhase("error");
-    }
+    } catch (e: any) { setError(e); setPhase("error"); }
   }
 
   async function handleCreate() {
@@ -40,9 +43,7 @@ export default function InstaSwapPanel() {
         ...(isPrivate && { private: true as const }),
       });
       setOrder(s); setPhase("created");
-    } catch (e: any) {
-      setError(e); setPhase("error");
-    }
+    } catch (e: any) { setError(e); setPhase("error"); }
   }
 
   async function handleRefresh() {
@@ -50,15 +51,11 @@ export default function InstaSwapPanel() {
     try {
       const st = await swapStatusLite(order.txid);
       setStatus(st);
-    } catch (e: any) {
-      setError(e);
-    }
+    } catch (e: any) { setError(e); }
   }
 
   return (
-    <div dir="rtl" className="instaswap-panel" style={{ maxWidth: 560, margin: "0 auto", padding: 16 }}>
-      <h2>تبديل عبر InstaSwap</h2>
-
+    <div dir="rtl" style={{ maxWidth: 560, margin: "0 auto", padding: 16 }}>
       <div style={{ display: "grid", gap: 8 }}>
         <label>من (مثال: btc.btc)</label>
         <input value={fromId} onChange={e => { setFromId(e.target.value); setPhase("idle"); setQuote(null); }} />
@@ -66,7 +63,7 @@ export default function InstaSwapPanel() {
         <label>إلى (مثال: eth.eth)</label>
         <input value={toId} onChange={e => { setToId(e.target.value); setPhase("idle"); setQuote(null); }} />
 
-        <label>المبلغ (نص)</label>
+        <label>المبلغ (نص، مثال 0.001)</label>
         <input value={amount} onChange={e => { setAmount(e.target.value); setPhase("idle"); setQuote(null); }} inputMode="decimal" />
 
         <label>
@@ -90,8 +87,7 @@ export default function InstaSwapPanel() {
           <div><strong>تستلم تقريباً:</strong> {quote.estimatedOut}</div>
           {quote.minMaxInfo && (
             <div style={{ fontSize: 12 }}>
-              الحد الأدنى: {quote.minMaxInfo.minimum ?? "—"} / الأقصى:{" "}
-              {quote.minMaxInfo.maximum === "unlimited" ? "غير محدود" : quote.minMaxInfo.maximum}
+              الحد الأدنى: {quote.minMaxInfo.minimum ?? "—"} / الأقصى: {quote.minMaxInfo.maximum === "unlimited" ? "غير محدود" : quote.minMaxInfo.maximum}
             </div>
           )}
           <button disabled={phase === "creating" || !recipient || !refund} onClick={handleCreate} style={{ marginTop: 8 }}>
@@ -122,8 +118,8 @@ export default function InstaSwapPanel() {
           {status && (
             <div style={{ marginTop: 8 }}>
               <strong>الحالة:</strong> {status.state}
-              {status.expired && " (منتهي)"}
-              {status.depositSeen && " (تم رؤية الإيداع)"}
+              {status.expired === true && " (منتهي)"}
+              {status.depositSeen === true && " (تم رؤية الإيداع)"}
             </div>
           )}
         </div>
@@ -131,3 +127,4 @@ export default function InstaSwapPanel() {
     </div>
   );
 }
+```
