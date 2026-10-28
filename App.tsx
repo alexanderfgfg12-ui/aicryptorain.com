@@ -10,7 +10,7 @@ import {
 } from 'firebase/auth'
 import { auth, firebaseConfigured, googleProvider } from './firebase'
 import { translations, type Lang } from './i18n'
-import InstaSwapPanel from './InstaSwapPanel'
+import SwapPanel from './SwapPanel'
 
 type Ticker = { symbol: string; lastPrice: string; priceChangePercent: string; quoteVolume: string }
 type Article = { title: string; url: string; source: string; publishedAt?: string }
@@ -296,7 +296,7 @@ export default function App() {
             <p>بدون KYC، بدون محفظة — أرسل الإيداع ونحن ندفع للمستلم.</p>
           </div>
         </div>
-        <InstaSwapPanel />
+        <SwapPanel />
       </section>}
 
       <footer className="site-footer"><span>☔ AI Crypto Rain</span><span>{t.footer}</span><div><BookOpen size={15}/> Educational use only</div></footer>
