@@ -10,10 +10,11 @@ import {
 } from 'firebase/auth'
 import { auth, firebaseConfigured, googleProvider } from './firebase'
 import { translations, type Lang } from './i18n'
+import InstaSwapPanel from './InstaSwapPanel'
 
 type Ticker = { symbol: string; lastPrice: string; priceChangePercent: string; quoteVolume: string }
 type Article = { title: string; url: string; source: string; publishedAt?: string }
-type Tab = 'dashboard' | 'markets' | 'news' | 'assistant'
+type Tab = 'dashboard' | 'markets' | 'news' | 'assistant' | 'swap'
 
 const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'TRXUSDT']
 const currencyFormat = (value: number, lang: Lang) => new Intl.NumberFormat(lang === 'ar' ? 'en-US' : lang, {
@@ -187,6 +188,7 @@ export default function App() {
     { id: 'markets', label: t.markets, icon: Activity },
     { id: 'news', label: t.news, icon: Newspaper },
     { id: 'assistant', label: t.assistant, icon: Sparkles },
+    { id: 'swap', label: 'تبديل InstaSwap', icon: RefreshCw },
   ]
 
   return <div className="app-shell" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -285,6 +287,16 @@ export default function App() {
           <form className="chat-form" onSubmit={submitAI}><input value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} placeholder={t.aiPlaceholder} aria-label={t.aiPlaceholder}/><button className="button-primary" type="submit" disabled={aiBusy || !aiPrompt.trim()}><Send size={17}/>{t.send}</button></form>
           <p className="data-note"><ShieldCheck size={15}/>{t.aiDisclaimer}</p>
         </section>
+      </section>}
+
+      {tab === 'swap' && <section className="page-content">
+        <div className="section-heading">
+          <div>
+            <h2>تبديل عبر InstaSwap</h2>
+            <p>بدون KYC، بدون محفظة — أرسل الإيداع ونحن ندفع للمستلم.</p>
+          </div>
+        </div>
+        <InstaSwapPanel />
       </section>}
 
       <footer className="site-footer"><span>☔ AI Crypto Rain</span><span>{t.footer}</span><div><BookOpen size={15}/> Educational use only</div></footer>
