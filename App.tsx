@@ -10,7 +10,130 @@ import {
 } from 'firebase/auth'
 import { auth, firebaseConfigured, googleProvider } from './firebase'
 import { translations, type Lang } from './i18n'
-import TradeWidget from './TradeWidget'
+
+// ==========================================
+// قسم InstaSwap (مدمج مباشرة لتجنب مشاكل الملفات)
+// ==========================================
+const INSTASWAP_BASE = "https://walletlessapi.instaswap.com";
+const AFFILIATE_ID = "0X0PUTVJ";
+
+async function instaswapFetch(path: string, options: RequestInit = {}) {
+  const res = await fetch(INSTASWAP_BASE + path, {
+    ...options,
+    headers: { "content-type": "application/json", ...(options.headers || {}) },
+  });
+  const text = await res.text();
+  let json: any = {};
+  try { json = text ? JSON.parse(text) : {}; } catch { json = { error: text }; }
+  if (!res.ok) {
+    const err = new Error(json?.message || json?.error || `InstaSwap ${res.status}`);
+    (err as any).code = json?.code;
+    (err as any).reason = json?.reason;
+    (err as any).minimum = json?.minimum;
+    (err as any).maximum = json?.maximum;
+    throw err;
+  }
+  return json;
+}
+
+function InstaSwapWidget() {
+  const [fromId, setFromId] = useState("btc.btc");
+  const [toId, setToId] = useState("eth.eth");
+  const [amount, setAmount] = useState("0.001");
+  const [recipient, setRecipient] = useState("");
+  const [refund, setRefund] = useState("");
+  const [isPrivate, setIsPrivate] = useState(false);
+
+  const [phase, setPhase] = useState<"idle" | "quoting" | "quoted" | "creating" | "created" | "error">("idle");
+  const [quote, setQuote] = useState<any>(null);
+  const [order, setOrder] = useState<any>(null);
+  const [status, setStatus] = useState<any>(null);
+  const [error, setError] = useState<any>(null);
+
+  async function handleQuote() {
+    setPhase("quoting"); setError(null); setOrder(null); setStatus(null);
+    try {
+      const q = await instaswapFetch("/quote-lite", {
+        method: "POST",
+        body: JSON.stringify({ affiliateId: AFFILIATE_ID, from: fromId, to: toId, amount, ...(isPrivate && { private: true }), minMaxInfo: true }),
+      });
+      setQuote(q); setPhase("quoted");
+    } catch (e: any) { setError(e); setPhase("error"); }
+  }
+
+  async function handleCreate() {
+    setPhase("creating"); setError(null);
+    try {
+      const s = await instaswapFetch("/swap-lite", {
+        method: "POST",
+        body: JSON.stringify({ affiliateId: AFFILIATE_ID, from: fromId, to: toId, amount, recipientAddress: recipient, refundAddress: refund, ...(isPrivate && { private: true }) }),
+      });
+      setOrder(s); setPhase("created");
+    } catch (e: any) { setError(e); setPhase("error"); }
+  }
+
+  async function handleRefresh() {
+    if (!order?.txid) return;
+    try {
+      const st = await instaswapFetch(`/swap/${order.txid}/status-lite`, { method: "GET" });
+      setStatus(st);
+    } catch (e: any) { setError(e); }
+  }
+
+  return (
+    <div dir="rtl" style={{ maxWidth: 560, margin: "0 auto", padding: 16 }}>
+      <div style={{ display: "grid", gap: 8 }}>
+        <label>من (مثال: btc.btc)</label>
+        <input value={fromId} onChange={e => { setFromId(e.target.value); setPhase("idle"); setQuote(null); }} />
+        <label>إلى (مثال: eth.eth)</label>
+        <input value={toId} onChange={e => { setToId(e.target.value); setPhase("idle"); setQuote(null); }} />
+        <label>المبلغ</label>
+        <input value={amount} onChange={e => { setAmount(e.target.value); setPhase("idle"); setQuote(null); }} inputMode="decimal" />
+        <label>
+          <input type="checkbox" checked={isPrivate} onChange={e => { setIsPrivate(e.target.checked); setPhase("idle"); setQuote(null); }} />
+          {" "}خصوصية (confidential rail)
+        </label>
+        <label>عنوان المستلم (أو ENS)</label>
+        <input value={recipient} onChange={e => setRecipient(e.target.value)} />
+        <label>عنوان الاسترداد (أو ENS)</label>
+        <input value={refund} onChange={e => setRefund(e.target.value)} />
+        <button disabled={phase === "quoting" || !amount} onClick={handleQuote}>
+          {phase === "quoting" ? "جارٍ الاقتباس..." : "احصل على سعر"}
+        </button>
+      </div>
+
+      {phase === "quoted" && quote && (
+        <div style={{ marginTop: 16, padding: 12, border: "1px solid #ccc", borderRadius: 8 }}>
+          <div><strong>تستلم تقريباً:</strong> {quote.estimatedOut}</div>
+          {quote.minMaxInfo && <div style={{ fontSize: 12 }}>الحد الأدنى: {quote.minMaxInfo.minimum ?? "—"} / الأقصى: {quote.minMaxInfo.maximum}</div>}
+          <button disabled={!recipient || !refund} onClick={handleCreate} style={{ marginTop: 8 }}>إنشاء الطلب</button>
+        </div>
+      )}
+
+      {error && (
+        <div role="alert" style={{ marginTop: 16, padding: 12, background: "#fee", borderRadius: 8 }}>
+          <div><strong>خطأ:</strong> {error.message}</div>
+          {error.minimum != null && <div>الحد الأدنى: {error.minimum}</div>}
+          {error.maximum != null && <div>الحد الأقصى: {error.maximum}</div>}
+        </div>
+      )}
+
+      {phase === "created" && order && (
+        <div style={{ marginTop: 16, padding: 12, background: "#efe", borderRadius: 8 }}>
+          <h3>أرسل الإيداع إلى:</h3>
+          <div><strong>العنوان:</strong> <code>{order.depositAddress}</code></div>
+          {order.depositMemo && <div><strong>المذكرة (إلزامية):</strong> <code>{order.depositMemo}</code></div>}
+          <div><strong>المبلغ بالضبط:</strong> <code>{order.depositAmountExact ?? amount}</code></div>
+          <button onClick={handleRefresh} style={{ marginTop: 8 }}>تحديث الحالة</button>
+          {status && <div style={{ marginTop: 8 }}><strong>الحالة:</strong> {status.state}</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+// ==========================================
+// نهاية قسم InstaSwap
+// ==========================================
 
 type Ticker = { symbol: string; lastPrice: string; priceChangePercent: string; quoteVolume: string }
 type Article = { title: string; url: string; source: string; publishedAt?: string }
@@ -86,7 +209,6 @@ export default function App() {
     setNewsLoading(true)
     setNewsError(false)
     try {
-      // Third-party endpoint is unverified until tested in the deployed origin.
       const res = await fetch('https://cryptocurrency.cv/api/news?limit=8')
       if (!res.ok) throw new Error('News API unavailable')
       const json: unknown = await res.json()
@@ -296,7 +418,7 @@ export default function App() {
             <p>بدون KYC، بدون محفظة — أرسل الإيداع ونحن ندفع للمستلم.</p>
           </div>
         </div>
-        <TradeWidget />
+        <InstaSwapWidget />
       </section>}
 
       <footer className="site-footer"><span>☔ AI Crypto Rain</span><span>{t.footer}</span><div><BookOpen size={15}/> Educational use only</div></footer>
