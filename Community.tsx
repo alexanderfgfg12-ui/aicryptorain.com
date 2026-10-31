@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { onAuthStateChanged, setPersistence, inMemoryPersistence, signInAnonymously, type User } from 'firebase/auth'
-import { collection, deleteDoc, doc, limit, onSnapshot, orderBy, query, serverTimestamp, setDoc, writeBatch } from 'firebase/firestore'
+import { collection, doc, limit, onSnapshot, orderBy, query, serverTimestamp, setDoc, writeBatch } from 'firebase/firestore'
 import { communityAuth, communityDb as db } from './firebase'
 import type { Lang } from './i18n'
 import { containsSensitiveData } from './communityModeration'
