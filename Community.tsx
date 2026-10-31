@@ -5,6 +5,7 @@ import {
 } from 'firebase/firestore'
 import { db } from './firebase'
 import type { Lang } from './i18n'
+import { containsSensitiveData } from './communityModeration'
 
 type Post = {
   id: string
@@ -25,6 +26,7 @@ const copy = {
     error: 'تعذر تنفيذ العملية. تحقق من إعداد Firebase وقواعد Firestore ثم حاول مجدداً.',
     comments: 'التعليقات', addComment: 'اكتب تعليقاً…', send: 'إرسال', member: 'عضو',
     count: 'منشور', setup: 'يلزم تهيئة Firebase وتفعيل Cloud Firestore لإطلاق المجتمع.',
+    sensitive: 'مرفوض: لا تنشر البريد أو الهاتف أو بيانات الهوية أو الحسابات البنكية أو البطاقات أو كلمات المرور أو رموز التحقق أو مفاتيح ومحافظ العملات أو الأرصدة والمعاملات الخاصة.',
   },
   fr: {
     title: 'CryptoCommunity', subtitle: 'La communauté crypto : partagez vos idées et apprenez ensemble.',
@@ -35,6 +37,7 @@ const copy = {
     error: 'Action impossible. Vérifiez Firebase et les règles Firestore.',
     comments: 'Commentaires', addComment: 'Écrire un commentaire…', send: 'Envoyer', member: 'Membre',
     count: 'publication', setup: 'Configurez Firebase et activez Cloud Firestore pour lancer la communauté.',
+    sensitive: 'Bloqué : ne publiez pas d’e-mails, téléphones, pièces d’identité, données bancaires ou de carte, mots de passe, codes, clés de portefeuille, soldes ou transactions privés.',
   },
   en: {
     title: 'CryptoCommunity', subtitle: 'A crypto-native community to share ideas and learn together.',
@@ -45,6 +48,7 @@ const copy = {
     error: 'Could not complete the action. Check Firebase and your Firestore security rules.',
     comments: 'Comments', addComment: 'Write a comment…', send: 'Send', member: 'Member',
     count: 'posts', setup: 'Configure Firebase and enable Cloud Firestore to launch the community.',
+    sensitive: 'Blocked: do not post emails, phone numbers, identity details, bank or card data, passwords, verification codes, wallet/private keys, or private balances and transactions.',
   },
 } as const
 
@@ -89,6 +93,7 @@ export default function Community({ user, lang, onResendVerification, onRefreshU
     event.preventDefault()
     const text = body.trim()
     if (!db || !user || !verified || !text || text.length > 1000 || busy) return
+    if (containsSensitiveData(text)) { setError(t.sensitive); return }
     setBusy(true); setError(''); setNotice('')
     try {
       await addDoc(collection(db, 'communityPosts'), {
@@ -113,6 +118,7 @@ export default function Community({ user, lang, onResendVerification, onRefreshU
     event.preventDefault()
     const text = (commentDrafts[postId] || '').trim()
     if (!db || !user || !verified || !text || text.length > 500 || busy) return
+    if (containsSensitiveData(text)) { setError(t.sensitive); return }
     setBusy(true); setError('')
     try {
       const row = await addDoc(collection(db, 'communityPosts', postId, 'comments'), {
