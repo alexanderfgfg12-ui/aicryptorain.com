@@ -68,6 +68,10 @@
 .community-feed{display:grid;gap:13px}
 .community-post{padding:18px 20px}
 .community-post-body{font-size:13px;line-height:1.9;color:#d8dce4;white-space:pre-wrap;overflow-wrap:anywhere;margin:10px 0 14px}
+.community-post-actions{display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.community-post-actions button{border:1px solid var(--line);border-radius:7px;background:transparent;color:var(--muted);padding:6px 10px;font:inherit;font-size:10px;cursor:pointer}
+.community-post-actions button:hover:not(:disabled){border-color:var(--gold2);color:var(--gold2)}
+.community-post-actions button:disabled{opacity:.55;cursor:default}
 .community-comment-toggle{border:0;border-top:1px solid var(--line);background:transparent;color:var(--gold2);padding:12px 0 0;font-size:11px}
 .community-comments{border-top:1px solid #262b35;margin-top:13px;padding-top:12px;display:grid;gap:10px}
 .community-comment{padding:9px 11px;border-radius:9px;background:#0e1219}
