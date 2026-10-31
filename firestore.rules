@@ -23,8 +23,9 @@ service cloud.firestore {
     match /communityMessages/{messageId} {
       allow read: if true;
       allow create: if isAnonymousUser()
-        && request.resource.data.keys().hasOnly(['authorUid', 'character', 'avatar', 'body', 'createdAt'])
-        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['character', 'avatar', 'body', 'createdAt'])
+        && existsAfter(/databases/$(database)/documents/communityMessageOwners/$(messageId))
+        && getAfter(/databases/$(database)/documents/communityMessageOwners/$(messageId)).data.ownerUid == request.auth.uid
         && request.resource.data.character is string
         && request.resource.data.character.size() >= 1
         && request.resource.data.character.size() <= 40
@@ -35,7 +36,22 @@ service cloud.firestore {
         && isSafePublicText(request.resource.data.body)
         && request.resource.data.createdAt == request.time;
       allow update: if false;
-      allow delete: if isAnonymousUser() && resource.data.authorUid == request.auth.uid;
+      allow delete: if isAnonymousUser()
+        && exists(/databases/$(database)/documents/communityMessageOwners/$(messageId))
+        && get(/databases/$(database)/documents/communityMessageOwners/$(messageId)).data.ownerUid == request.auth.uid;
+    }
+
+    // Ownership metadata is private; public message reads never reveal anonymous UIDs.
+    match /communityMessageOwners/{messageId} {
+      allow read: if false;
+      allow create: if isAnonymousUser()
+        && request.resource.data.keys().hasOnly(['ownerUid', 'createdAt'])
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && existsAfter(/databases/$(database)/documents/communityMessages/$(messageId));
+      allow update: if false;
+      allow delete: if isAnonymousUser() && resource.data.ownerUid == request.auth.uid
+        && !existsAfter(/databases/$(database)/documents/communityMessages/$(messageId));
     }
 
     // Reports contain only fixed metadata; no reporter-supplied free text or attachments.
