@@ -1,0 +1,11 @@
+name = "aicryptorain-ai"
+main = "workers/ai-assistant.ts"
+compatibility_date = "2026-10-31"
+
+[ai]
+binding = "AI"
+remote = true
+
+[vars]
+# Change this list to the exact origins serving your website.
+APP_ORIGINS = "https://aicryptorain.com,https://www.aicryptorain.com"
