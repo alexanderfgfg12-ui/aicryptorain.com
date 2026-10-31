@@ -174,6 +174,7 @@ export default function App() {
   const [password, setPassword] = useState('')
   const [authMessage, setAuthMessage] = useState('')
   const [authBusy, setAuthBusy] = useState(false)
+  const [, setAuthRevision] = useState(0)
   const [aiPrompt, setAiPrompt] = useState('')
   const [aiMessages, setAiMessages] = useState<{ role: 'assistant' | 'user'; text: string }[]>([])
   const [aiBusy, setAiBusy] = useState(false)
@@ -424,7 +425,7 @@ export default function App() {
 
       {tab === 'membership' && <Membership email={user?.email} lang={lang} firebaseReady={firebaseConfigured} onSignIn={() => { setAuthOpen(true); setAuthMessage('') }} onSignOut={() => { if (auth) void signOut(auth) }}/ >}
 
-      {tab === 'community' && <Community user={user} lang={lang} onResendVerification={async () => { if (user) await sendEmailVerification(user) }} onRefreshUser={async () => { if (user) { await reload(user); setUser(auth?.currentUser ?? null) } }}/ >}
+      {tab === 'community' && <Community user={user} lang={lang} onResendVerification={async () => { if (user) await sendEmailVerification(user) }} onRefreshUser={async () => { if (user) { await reload(user); setUser(auth?.currentUser ?? null); setAuthRevision(value => value + 1) } }}/ >}
 
       {tab === 'news' && <section className="page-content"><div className="section-heading"><div><h2>{t.newsTitle}</h2><p>{t.source}: cryptocurrency.cv</p></div><button className="button-ghost" onClick={() => void loadNews()}><RefreshCw size={16}/>{t.refresh}</button></div><section className="panel news-panel"><NewsList articles={articles} loading={newsLoading} error={newsError} t={t}/></section></section>}
 
