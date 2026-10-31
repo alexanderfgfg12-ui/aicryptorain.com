@@ -105,7 +105,7 @@ function InstaSwapWidget() {
         <input value={recipient} onChange={e => setRecipient(e.target.value)} />
         <label>عنوان الاسترداد (أو ENS)</label>
         <input value={refund} onChange={e => setRefund(e.target.value)} />
-        <button disabled={!AFFILIATE_ID || phase === "quoting" || phase === "creating" || !amount}>
+        <button onClick={handleQuote} disabled={!AFFILIATE_ID || phase === "quoting" || phase === "creating" || !amount}>
           {phase === "quoting" ? "جارٍ الاقتباس..." : !AFFILIATE_ID ? "التفعيل غير مكتمل" : "احصل على سعر"}
         </button>
       </div>
