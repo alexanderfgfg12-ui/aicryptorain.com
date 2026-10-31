@@ -2,17 +2,18 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import {
   Activity, ArrowDownRight, ArrowUpRight, Bell, BookOpen, ChevronDown,
   CircleHelp, Globe2, LayoutDashboard, LogIn, LogOut, Menu, Newspaper,
-  RefreshCw, Search, ShieldCheck, Sparkles, Star, X, Send, CircleUserRound,
+  RefreshCw, Search, ShieldCheck, Sparkles, Star, X, Send, CircleUserRound, Users,
 } from 'lucide-react'
 import {
   createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword,
-  signInWithPopup, signOut, type User,
+  signInWithPopup, signOut, sendEmailVerification, reload, type User,
 } from 'firebase/auth'
 import { auth, firebaseConfigured, googleProvider } from './firebase'
 import { translations, type Lang } from './i18n'
 import MarketScanner from './MarketScanner'
 import AlertCenter from './AlertCenter'
 import Membership from './Membership'
+import Community from './Community'
 
 // ==========================================
 // قسم InstaSwap (مدمج مباشرة لتجنب مشاكل الملفات)
@@ -144,7 +145,7 @@ function InstaSwapWidget() {
 
 type Ticker = { symbol: string; lastPrice: string; priceChangePercent: string; quoteVolume: string }
 type Article = { title: string; url: string; source: string; publishedAt?: string }
-type Tab = 'dashboard' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'news' | 'assistant' | 'swap'
+type Tab = 'dashboard' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'community' | 'news' | 'assistant' | 'swap'
 
 const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'TRXUSDT']
 const currencyFormat = (value: number, lang: Lang) => new Intl.NumberFormat(lang === 'ar' ? 'en-US' : lang, {
@@ -270,8 +271,13 @@ export default function App() {
     if (!auth) { setAuthMessage(t.authDisabled); return }
     setAuthBusy(true); setAuthMessage('')
     try {
-      if (authMode === 'signup') await createUserWithEmailAndPassword(auth, email.trim(), password)
-      else await signInWithEmailAndPassword(auth, email.trim(), password)
+      if (authMode === 'signup') {
+        const credential = await createUserWithEmailAndPassword(auth, email.trim(), password)
+        await sendEmailVerification(credential.user)
+        setTab('community')
+      } else {
+        await signInWithEmailAndPassword(auth, email.trim(), password)
+      }
       setAuthOpen(false); setPassword(''); setAuthMessage('')
     } catch {
       setAuthMessage(t.authError)
@@ -317,7 +323,8 @@ export default function App() {
     { id: 'markets', label: t.markets, icon: Activity },
     { id: 'scanner', label: lang === 'ar' ? 'ماسح السوق' : lang === 'fr' ? 'Scanner' : 'Scanner', icon: Search },
     { id: 'alerts', label: lang === 'ar' ? 'تنبيهات الأسعار' : lang === 'fr' ? 'Alertes' : 'Price alerts', icon: Bell },
-    { id: 'membership', label: lang === 'ar' ? 'العضوية المجانية' : lang === 'fr' ? 'Adhésion' : 'Membership', icon: CircleUserRound }, 
+    { id: 'membership', label: lang === 'ar' ? 'العضوية المجانية' : lang === 'fr' ? 'Adhésion' : 'Membership', icon: CircleUserRound },
+    { id: 'community', label: 'CryptoCommunity', icon: Users },
     { id: 'news', label: t.news, icon: Newspaper },
     { id: 'assistant', label: t.assistant, icon: Sparkles },
     { id: 'swap', label: 'تبديل InstaSwap', icon: RefreshCw },
@@ -416,6 +423,8 @@ export default function App() {
       {tab === 'alerts' && <AlertCenter tickers={tickers} lang={lang}/>}
 
       {tab === 'membership' && <Membership email={user?.email} lang={lang} firebaseReady={firebaseConfigured} onSignIn={() => { setAuthOpen(true); setAuthMessage('') }} onSignOut={() => { if (auth) void signOut(auth) }}/ >}
+
+      {tab === 'community' && <Community user={user} lang={lang} onResendVerification={async () => { if (user) await sendEmailVerification(user) }} onRefreshUser={async () => { if (user) { await reload(user); setUser(auth?.currentUser ?? null) } }}/ >}
 
       {tab === 'news' && <section className="page-content"><div className="section-heading"><div><h2>{t.newsTitle}</h2><p>{t.source}: cryptocurrency.cv</p></div><button className="button-ghost" onClick={() => void loadNews()}><RefreshCw size={16}/>{t.refresh}</button></div><section className="panel news-panel"><NewsList articles={articles} loading={newsLoading} error={newsError} t={t}/></section></section>}
 
