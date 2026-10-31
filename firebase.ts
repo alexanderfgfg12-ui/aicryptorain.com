@@ -12,7 +12,12 @@ const config = {
 }
 
 export const firebaseConfigured = Boolean(config.apiKey && config.authDomain && config.projectId && config.appId)
-const app = firebaseConfigured ? (getApps()[0] ?? initializeApp(config)) : null
+const app = firebaseConfigured ? (getApps().find(item => item.name === '[DEFAULT]') ?? initializeApp(config)) : null
+const anonymousApp = firebaseConfigured
+  ? (getApps().find(item => item.name === 'community-anonymous') ?? initializeApp(config, 'community-anonymous'))
+  : null
+
 export const auth = app ? getAuth(app) : null
+export const communityAuth = anonymousApp ? getAuth(anonymousApp) : null
 export const db = app ? getFirestore(app) : null
 export const googleProvider = new GoogleAuthProvider()
