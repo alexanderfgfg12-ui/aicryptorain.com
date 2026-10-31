@@ -69,4 +69,4 @@ After adding or changing a build variable, trigger a new deployment so Vite embe
 
 ## Paused community work
 
-The CryptoCommunity front-end is intentionally excluded from the active app. Firestore rules and emulator tests have been retained but are not deployed by the static website workflow. See CRYPTOCOMMUNITY_SETUP.md for archived notes; do not enable or publish that feature until it is deliberately resumed and reviewed.
+The CryptoCommunity front-end is intentionally excluded from the active app. Firestore rules and emulator tests have been retained as dormant files; they are not run by the active CI workflow and are not deployed by the static website workflow. See CRYPTOCOMMUNITY_SETUP.md for archived notes; do not enable or publish that feature until it is deliberately resumed and reviewed.
