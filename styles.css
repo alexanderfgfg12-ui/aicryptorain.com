@@ -36,3 +36,18 @@
 .alert-permission span,.alert-error{font-size:10px;color:var(--muted)}
 .alert-error{color:var(--red)}
 @media(max-width:760px){.alert-form{grid-template-columns:1fr 1fr}.alert-form label:nth-child(3){grid-column:1/-1}.alert-form button{grid-column:1/-1}.alert-row{gap:7px}.alert-status{font-size:9px;padding:4px 6px}}
+
+
+/* Free membership page */
+.membership-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;max-width:1000px;margin-inline:auto}
+.membership-card{padding:22px;min-width:0}
+.membership-plan-icon{width:44px;height:44px;border-radius:13px;background:#f2c75c16;color:var(--gold2);display:grid;place-items:center;margin-bottom:18px}
+.membership-kicker{font-size:10px;color:var(--muted);margin:0 0 8px}
+.membership-card h3{font-size:19px;margin:0 0 10px;overflow-wrap:anywhere}
+.membership-price{display:block;color:var(--green);font-size:15px;margin-bottom:20px}
+.membership-card ul{list-style:none;padding:0;margin:0 0 18px;display:grid;gap:12px}
+.membership-card li{display:flex;align-items:flex-start;gap:9px;font-size:11px;color:#c4cad4}
+.membership-card li svg{color:var(--green);flex-shrink:0}
+.membership-account-state{font-size:11px;color:var(--muted);margin:0 0 16px}
+.membership-card .button-primary,.membership-card .button-ghost{min-height:40px}
+@media(max-width:760px){.membership-grid{grid-template-columns:1fr}}
