@@ -18,7 +18,7 @@ import Membership from './Membership'
 // قسم InstaSwap (مدمج مباشرة لتجنب مشاكل الملفات)
 // ==========================================
 const INSTASWAP_BASE = "https://walletlessapi.instaswap.com";
-const AFFILIATE_ID = "0X0PUTVJ";
+const AFFILIATE_ID = (import.meta.env.VITE_INSTASWAP_AFFILIATE_ID || "").trim();
 
 async function instaswapFetch(path: string, options: RequestInit = {}) {
   const res = await fetch(INSTASWAP_BASE + path, {
@@ -54,6 +54,8 @@ function InstaSwapWidget() {
   const [error, setError] = useState<any>(null);
 
   async function handleQuote() {
+    if (!AFFILIATE_ID) { setError(new Error("يلزم إعداد VITE_INSTASWAP_AFFILIATE_ID بعد التسجيل وإضافة نطاق الموقع في بوابة InstaSwap.")); setPhase("error"); return; }
+    if (!Number.isFinite(Number(amount)) || Number(amount) <= 0 || fromId.trim() === toId.trim()) { setError(new Error("تحقق من المبلغ واختر أصلين مختلفين.")); setPhase("error"); return; }
     setPhase("quoting"); setError(null); setOrder(null); setStatus(null);
     try {
       const q = await instaswapFetch("/quote-lite", {
@@ -65,6 +67,7 @@ function InstaSwapWidget() {
   }
 
   async function handleCreate() {
+    if (!AFFILIATE_ID || !quote || !recipient.trim() || !refund.trim()) { setError(new Error("أكمل عرض السعر وعنوان المستلم وعنوان الاسترداد أولاً.")); setPhase("error"); return; }
     setPhase("creating"); setError(null);
     try {
       const s = await instaswapFetch("/swap-lite", {
@@ -78,13 +81,14 @@ function InstaSwapWidget() {
   async function handleRefresh() {
     if (!order?.txid) return;
     try {
-      const st = await instaswapFetch(`/swap/${order.txid}/status-lite`, { method: "GET" });
+      const st = await instaswapFetch(`/swap/${encodeURIComponent(order.txid)}/status-lite`, { method: "GET" });
       setStatus(st);
     } catch (e: any) { setError(e); }
   }
 
   return (
     <div dir="rtl" style={{ maxWidth: 560, margin: "0 auto", padding: 16 }}>
+      {!AFFILIATE_ID && <div role="status" style={{ marginBottom: 16, padding: 14, border: "1px solid #d6a84b", borderRadius: 10, background: "rgba(214,168,75,.08)" }}><strong>التفعيل بانتظار حساب الشريك</strong><p style={{ margin: "8px 0" }}>سجّل مجاناً في InstaSwap Partners، أضف نطاق aicryptorain.com إلى النطاقات المسموحة، ثم أضف معرّف الشريك إلى إعدادات النشر باسم <code>VITE_INSTASWAP_AFFILIATE_ID</code>. لن تُنشأ أي معاملة قبل ضبط المعرّف.</p><a href="https://partners.instaswap.com" target="_blank" rel="noopener noreferrer">فتح بوابة InstaSwap Partners ↗</a></div>}
       <div style={{ display: "grid", gap: 8 }}>
         <label>من (مثال: btc.btc)</label>
         <input value={fromId} onChange={e => { setFromId(e.target.value); setPhase("idle"); setQuote(null); }} />
@@ -100,8 +104,8 @@ function InstaSwapWidget() {
         <input value={recipient} onChange={e => setRecipient(e.target.value)} />
         <label>عنوان الاسترداد (أو ENS)</label>
         <input value={refund} onChange={e => setRefund(e.target.value)} />
-        <button disabled={phase === "quoting" || !amount} onClick={handleQuote}>
-          {phase === "quoting" ? "جارٍ الاقتباس..." : "احصل على سعر"}
+        <button disabled={!AFFILIATE_ID || phase === "quoting" || phase === "creating" || !amount}>
+          {phase === "quoting" ? "جارٍ الاقتباس..." : !AFFILIATE_ID ? "التفعيل غير مكتمل" : "احصل على سعر"}
         </button>
       </div>
 
@@ -124,8 +128,8 @@ function InstaSwapWidget() {
       {phase === "created" && order && (
         <div style={{ marginTop: 16, padding: 12, background: "#efe", borderRadius: 8 }}>
           <h3>أرسل الإيداع إلى:</h3>
-          <div><strong>العنوان:</strong> <code>{order.depositAddress}</code></div>
-          {order.depositMemo && <div><strong>المذكرة (إلزامية):</strong> <code>{order.depositMemo}</code></div>}
+          <div><strong>العنوان:</strong> <code>{order.depositAddress || order.depositInfo?.[0]?.depositAddress || "راجع تفاصيل الإيداع في رد InstaSwap"}</code></div>
+          {(order.depositMemo || order.depositInfo?.[0]?.depositMemo) && <div><strong>المذكرة (إلزامية):</strong> <code>{order.depositMemo || order.depositInfo?.[0]?.depositMemo}</code></div>}
           <div><strong>المبلغ بالضبط:</strong> <code>{order.depositAmountExact ?? amount}</code></div>
           <button onClick={handleRefresh} style={{ marginTop: 8 }}>تحديث الحالة</button>
           {status && <div style={{ marginTop: 8 }}><strong>الحالة:</strong> {status.state}</div>}
