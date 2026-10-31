@@ -82,3 +82,17 @@
 .community-notice{color:var(--green);background:#32d29612}
 .community-error{color:var(--red);background:#ff6d7a12}
 @media(max-width:640px){.community-post{padding:15px}.community-verify{align-items:flex-start;flex-direction:column}.community-comment-form{flex-wrap:wrap}.community-comment-form input{flex-basis:100%}.community-comment-form button{width:100%}}
+
+
+/* Anonymous text-only community character picker */
+.community-avatar-picker{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0 16px}
+.community-avatar-option{display:grid;justify-items:center;gap:5px;min-width:0;padding:10px 5px;border:1px solid var(--line);border-radius:10px;background:#10141c;color:#c8ced8;cursor:pointer}
+.community-avatar-option span{font-size:25px;line-height:1.2}
+.community-avatar-option small{font-size:9px;text-align:center;overflow-wrap:anywhere}
+.community-avatar-option.selected{border-color:#b89549;background:#f2c75c14;color:#f1d38d}
+.community-composer> b{font-size:12px}
+.community-composer form{margin-top:8px}
+.community-composer textarea{min-height:82px}
+.community-state p{margin:0 0 8px}
+.community-state small{font-size:10px;color:#d7c18a}
+@media(max-width:520px){.community-avatar-picker{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.community-avatar-option{padding:8px 3px}.community-avatar-option small{font-size:8px}}
