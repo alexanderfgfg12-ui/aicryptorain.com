@@ -14,12 +14,22 @@ This version replaces email/password participation with a separate Firebase Anon
 - Firebase still processes an anonymous UID and technical request metadata. This is pseudonymous participation, not guaranteed invisibility from Firebase, hosting providers, network operators, or lawful requests.
 - The feed is one public stream of text comments (up to 500 characters), not user-created profiles, image posts, uploads, or private messages.
 - Members choose from built-in fictional character names and emoji avatars. No avatar upload or user-supplied profile fields exist.
-- Links and common sensitive-data patterns are blocked on the client and in Firestore rules. These checks are best effort and cannot detect every obfuscated identifier, harmful statement, or context-dependent personal detail.
+- Links and common sensitive-data patterns are blocked on the client and in Firestore rules. Members can report comments using a fixed reason; reports are private to the project operators and contain no free-text reporter input. Authors can delete their own comments.
+- The client applies a small per-session posting cooldown as a usability/anti-spam friction only; it is not a security boundary and can be bypassed. Strong rate limiting requires a trusted backend or App Check-aware enforcement. These checks are best effort and cannot detect every obfuscated identifier, harmful statement, or context-dependent personal detail.
 - The old `communityPosts` collection is denied by the new rules. Existing records are not automatically erased; review and delete them separately if retention is not wanted.
 - Public comments remain publicly readable. Do not write anything you would not want publicly visible.
 
 ## Security and operations
+- Important: the community Firestore instance is initialized from the same named Firebase app as the anonymous Auth instance, so Firestore requests carry the anonymous user's auth token. Do not switch this back to the main site's default app.
 - Anonymous sign-in reduces password collection and password-reset risks, but it does not prevent spam, bots, harassment, abuse, or correlation of sessions.
-- Consider Firebase App Check, rate limiting via a trusted backend, reporting/moderation workflows, and a privacy/legal review before public launch. App Check and text filters are not complete abuse prevention.
+- Enable Firebase App Check after testing its provider configuration, and review the private `communityReports` collection regularly in the Firebase console. A trusted backend is needed for enforceable rate limits, automated report triage, moderator roles, and bans. Complete a privacy/legal review before public launch. App Check and text filters are not complete abuse prevention.
 - Test all rules in the Firebase Emulator Suite before deployment. A repository commit does not deploy Firestore rules.
 - Firebase free-tier quotas apply; usage beyond free allowances may require billing. Do not enable billing without reviewing costs.
+
+
+## Operator moderation checklist
+1. Review new documents in `communityReports` in the Firebase console.
+2. Open the referenced `communityMessages/{messageId}` document and assess it against the published community rules.
+3. Remove harmful messages from the console; keep a minimal incident log only as long as operationally necessary.
+4. If abuse is recurring, add a trusted moderation backend with moderator-only claims and server-enforced rate limits before adding bans or automated deletion.
+5. Publish a contact/reporting channel and clear retention/deletion policy before inviting the public.
