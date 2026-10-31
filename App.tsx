@@ -367,6 +367,16 @@ export default function App() {
           <div className="hero-art" aria-hidden="true"><div className="orb orb-one"/><div className="orb orb-two"/><div className="coin coin-btc">₿</div><div className="coin coin-eth">◆</div><div className="orbit orbit-one"/><div className="orbit orbit-two"/><div className="art-label"><Activity size={15}/> Market intelligence</div></div>
         </div>
 
+        <section className="home-swap-showcase">
+          <div className="home-swap-intro">
+            <div className="pill gold-pill"><RefreshCw size={14}/> INSTANT CROSS-CHAIN SWAP</div>
+            <h2>بدّل العملات الرقمية مباشرة من الصفحة الرئيسية</h2>
+            <p>اختر أصل الإرسال والاستلام، أدخل المبلغ، واحصل على عرض سعر مباشر من InstaSwap — دون مغادرة AI Crypto Rain.</p>
+            <div className="home-swap-points"><span><ShieldCheck size={15}/> عرض سعر قبل التأكيد</span><span><Activity size={15}/> متابعة حالة الطلب</span><span><Globe2 size={15}/> تبديل عبر الشبكات</span></div>
+          </div>
+          <div className="home-swap-widget"><InstaSwapWidget /></div>
+        </section>
+
         <div className="feature-strip" aria-label="Platform tools">
           <button className="feature-tile" onClick={() => navigate('markets')}><span className="feature-icon"><Activity size={19}/></span><span><b>أسعار مباشرة</b><small>متابعة الأصول وحركة 24 ساعة</small></span><ArrowUpRight size={16}/></button>
           <button className="feature-tile" onClick={() => navigate('analytics')}><span className="feature-icon"><LayoutDashboard size={19}/></span><span><b>لوحة التحليل الفني</b><small>شموع ومؤشرات واتجاهات السوق</small></span><ArrowUpRight size={16}/></button>
@@ -395,7 +405,7 @@ export default function App() {
           </section>
           <div className="partner-stack">
             <section className="affiliate-panel partner-card binance-partner"><div className="affiliate-glow"/><div className="affiliate-icon"><Activity size={23}/></div><div className="pill gold-pill">BINANCE AFFILIATE</div><h3>{t.affiliateTitle}</h3><p>{t.affiliateBody}</p><a className="button-primary affiliate-link" href={referralUrl} target="_blank" rel="noopener noreferrer sponsored">{t.register}<ArrowUpRight size={17}/></a><small className="disclosure">رابط شراكة • تطبق شروط Binance</small></section>
-            <section className="affiliate-panel partner-card instaswap-partner"><div className="affiliate-glow"/><div className="affiliate-icon"><RefreshCw size={23}/></div><div className="pill gold-pill">INSTASWAP PARTNER</div><h3>بدّل العملات عبر InstaSwap</h3><p>قارن عرض السعر والرسوم، أنشئ طلب التبديل وتابع حالته من داخل المنصة.</p><button className="button-primary affiliate-link" onClick={() => navigate('swap')}>ابدأ التبديل <ArrowUpRight size={17}/></button><small className="disclosure">تفعيل الإحالة يتطلب معرّف الشريك المعتمد</small></section>
+
           </div>
         </div>
         <section className="panel converter-panel"><div className="panel-heading"><div><h3>{t.convertTitle}</h3><p>{t.convertDescription}</p></div><span className="official-tag"><ShieldCheck size={15}/> Binance</span></div><BinanceWidget lang={lang}/></section>
