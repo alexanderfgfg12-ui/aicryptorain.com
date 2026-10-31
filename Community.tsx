@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { onAuthStateChanged, setPersistence, inMemoryPersistence, signInAnonymously, type User } from 'firebase/auth'
-import { addDoc, collection, limit, onSnapshot, orderBy, query, serverTimestamp } from 'firebase/firestore'
-import { communityAuth, db } from './firebase'
+import { addDoc, collection, deleteDoc, doc, limit, onSnapshot, orderBy, query, serverTimestamp, setDoc } from 'firebase/firestore'
+import { communityAuth, communityDb as db } from './firebase'
 import type { Lang } from './i18n'
 import { containsSensitiveData } from './communityModeration'
 
@@ -73,8 +73,11 @@ export default function Community({ lang }: {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [selected, setSelected] = useState(0)
+  const [reporting, setReporting] = useState<string | null>(null)
+  const [reportedIds, setReportedIds] = useState<string[]>([])
+  const [lastPublishedAt, setLastPublishedAt] = useState(0)
   const character = characters[selected]
-  const localizedCharacters = useMemo(() => characters, [])
+  const localizedCharacters = characters
 
   useEffect(() => {
     if (!communityAuth) { setReady(true); setLoading(false); return }
@@ -109,6 +112,7 @@ export default function Community({ lang }: {
     event.preventDefault()
     const text = body.trim()
     if (!db || !anonUser?.isAnonymous || !text || text.length > 500 || busy) return
+    if (Date.now() - lastPublishedAt < 5000) { setError('انتظر قليلاً قبل إرسال تعليق آخر.'); return }
     if (containsSensitiveData(text) || /(?:https?:\/\/|www\.|\b[a-z0-9-]+\.(?:com|net|org|io|me|co)\b)/i.test(text)) {
       setError(t.sensitive)
       return
@@ -120,7 +124,27 @@ export default function Community({ lang }: {
         body: text, createdAt: serverTimestamp(),
       })
       setBody('')
+      setLastPublishedAt(Date.now())
     } catch { setError(t.error) } finally { setBusy(false) }
+  }
+
+
+  const reportMessage = async (messageId: string) => {
+    if (!db || !anonUser?.isAnonymous || reportedIds.includes(messageId) || reporting) return
+    setReporting(messageId); setError('')
+    try {
+      const reportId = `${messageId}_${anonUser.uid}`
+      await setDoc(doc(db, 'communityReports', reportId), {
+        messageId, reporterUid: anonUser.uid, reason: 'personal_data_or_abuse', createdAt: serverTimestamp(),
+      })
+      setReportedIds(current => [...current, messageId])
+    } catch { setError(t.error) } finally { setReporting(null) }
+  }
+
+  const deleteOwnMessage = async (message: Message) => {
+    if (!db || !anonUser?.isAnonymous || message.authorUid !== anonUser.uid) return
+    try { await deleteDoc(doc(db, 'communityMessages', message.id)) }
+    catch { setError(t.error) }
   }
 
   if (!db || !communityAuth) return <section className="page-content"><div className="panel community-state">{t.error}</div></section>
@@ -142,7 +166,7 @@ export default function Community({ lang }: {
     {loading ? <div className="panel community-state">{t.loading}</div> : messages.length === 0 ? <div className="panel community-state">{t.empty}</div> :
       <div className="community-feed">{messages.map(message => <article className="panel community-post" key={message.id}>
         <div className="community-author"><span className="avatar" aria-hidden="true">{message.avatar || '🎭'}</span><div><b>{message.character || 'شخصية مجهولة'}</b><small>{message.createdAt?.toDate ? message.createdAt.toDate().toLocaleString(lang) : ''}</small></div></div>
-        <p className="community-post-body">{message.body}</p>
+        <p className="community-post-body">{message.body}</p><div className="community-post-actions"><button type="button" onClick={() => void reportMessage(message.id)} disabled={!anonUser || reportedIds.includes(message.id) || reporting === message.id}>{reportedIds.includes(message.id) ? 'تم الإبلاغ' : reporting === message.id ? 'جارٍ الإبلاغ…' : 'إبلاغ عن تعليق'}</button>{anonUser?.uid === message.authorUid && <button type="button" onClick={() => void deleteOwnMessage(message)}>حذف تعليقي</button>}</div>
       </article>)}</div>}
   </section>
 }
