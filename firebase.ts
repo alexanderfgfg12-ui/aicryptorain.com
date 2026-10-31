@@ -1,5 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app'
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'
+import { getFirestore } from 'firebase/firestore'
 
 const config = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -11,6 +12,14 @@ const config = {
 }
 
 export const firebaseConfigured = Boolean(config.apiKey && config.authDomain && config.projectId && config.appId)
-const app = firebaseConfigured ? (getApps()[0] ?? initializeApp(config)) : null
+const app = firebaseConfigured ? (getApps().find(item => item.name === '[DEFAULT]') ?? initializeApp(config)) : null
+const anonymousApp = firebaseConfigured
+  ? (getApps().find(item => item.name === 'community-anonymous') ?? initializeApp(config, 'community-anonymous'))
+  : null
+
 export const auth = app ? getAuth(app) : null
+export const communityAuth = anonymousApp ? getAuth(anonymousApp) : null
+export const db = app ? getFirestore(app) : null
+// Firestore must use the same Firebase app as communityAuth so requests carry its anonymous ID token.
+export const communityDb = anonymousApp ? getFirestore(anonymousApp) : null
 export const googleProvider = new GoogleAuthProvider()
