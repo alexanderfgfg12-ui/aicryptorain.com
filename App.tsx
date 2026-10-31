@@ -260,8 +260,8 @@ export default function App() {
     setAuthBusy(true); setAuthMessage('')
     try {
       if (authMode === 'signup') {
-        const credential = await createUserWithEmailAndPassword(auth, email.trim(), password)
-        setTab('community')
+        await createUserWithEmailAndPassword(auth, email.trim(), password)
+        setTab('membership')
       } else {
         await signInWithEmailAndPassword(auth, email.trim(), password)
       }
