@@ -185,3 +185,23 @@ body{background:radial-gradient(ellipse at 72% -18%,rgba(77,111,180,.18),transpa
 .analytics-dashboard{max-width:1320px;margin:0 auto}.analytics-title{margin-top:0}.analytics-controls{display:flex;align-items:end;gap:18px;flex-wrap:wrap;margin:18px 0;padding:15px 18px}.analytics-controls label{display:grid;gap:7px;color:var(--muted);font-size:11px;min-width:145px}.analytics-controls select{height:39px;background:#0b1220;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:0 12px}.timeframe-control{display:flex;gap:5px;flex-wrap:wrap}.timeframe-control button{border:1px solid var(--line);background:#0d1421;color:var(--muted);border-radius:8px;padding:9px 13px;font-size:11px}.timeframe-control button.selected{background:#e9bd581b;border-color:var(--gold);color:var(--gold2)}.analytics-updated{font-size:10px;color:var(--muted);margin-inline-start:auto}.analytics-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}.analytics-kpis .metric-card{display:grid;gap:9px;min-width:0}.analytics-kpis .metric-card>small{font-size:10px;color:var(--muted)}.analytics-kpis .metric-card>strong{font-size:clamp(17px,2vw,24px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.analytics-kpis .metric-card>span{font-size:10px;color:var(--muted)}.chart-panel{margin:14px 0;min-width:0}.chart-panel .panel-heading{margin-bottom:12px}.chart-panel .panel-heading h3{font-size:14px}.chart-panel .panel-heading p{font-size:10px}.chart-loading{height:330px;display:grid;place-items:center;color:var(--muted);font-size:12px}.analytics-chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.analytics-footnote{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:#111827;color:var(--muted);font-size:10px;line-height:1.7}.analytics-footnote svg{color:var(--gold2);flex-shrink:0}.analytics-footnote span{flex:1}.analytics-footnote b{color:var(--gold2);white-space:nowrap}
 @media(max-width:900px){.analytics-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.analytics-chart-grid{grid-template-columns:1fr}}
 @media(max-width:600px){.analytics-controls{align-items:stretch;gap:12px}.analytics-controls label{min-width:100%}.analytics-updated{margin-inline-start:0}.timeframe-control button{flex:1;padding:8px 9px}.analytics-kpis .metric-card{padding:13px}.analytics-kpis .metric-card>strong{font-size:18px}.analytics-footnote{align-items:flex-start}.partner-card{padding:17px}}
+
+/* Homepage InstaSwap-first redesign */
+.home-swap-showcase{display:grid;grid-template-columns:minmax(230px,.72fr) minmax(0,1.55fr);gap:24px;align-items:start;padding:25px;margin:0 0 28px;border:1px solid #82652d88;border-radius:20px;background:radial-gradient(ellipse at 5% 0%,#e4b64220,transparent 38%),linear-gradient(130deg,#171912,#111720 65%,#12131b);box-shadow:0 18px 55px #0005}
+.home-swap-intro{padding:13px 6px;position:sticky;top:20px}
+.home-swap-intro h2{font-size:clamp(22px,2.5vw,31px);line-height:1.45;letter-spacing:-.7px;margin:18px 0 10px}
+.home-swap-intro p{font-size:12px;line-height:2;color:#aeb6c4;margin:0}
+.home-swap-points{display:grid;gap:12px;margin-top:24px;color:#d8c99f;font-size:11px}
+.home-swap-points span{display:flex;align-items:center;gap:9px}
+.home-swap-points svg{color:var(--gold);flex-shrink:0}
+.home-swap-widget{min-width:0}
+.home-swap-widget .instaswap-layout{display:block}
+.home-swap-widget .instaswap-aside{display:none}
+.home-swap-widget .instaswap-card{padding:21px;background:linear-gradient(145deg,#171d25,#10141c);border-color:#3a3b36;box-shadow:0 12px 35px #0004}
+.home-swap-widget .instaswap-heading h3{font-size:17px}
+.home-swap-widget .swap-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.home-swap-widget .swap-quote-button{min-height:46px;font-size:13px}
+.home-swap-widget .swap-form-grid select,.home-swap-widget .swap-form-grid input{min-height:43px}
+.home-swap-widget .data-note{font-size:10px}
+@media(max-width:1050px){.home-swap-showcase{grid-template-columns:1fr}.home-swap-intro{position:static;padding:2px 3px 0}.home-swap-points{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}}
+@media(max-width:600px){.home-swap-showcase{padding:13px;gap:12px;border-radius:15px}.home-swap-intro h2{font-size:22px;margin:13px 0 7px}.home-swap-points{grid-template-columns:1fr;gap:8px;margin-top:14px}.home-swap-widget .instaswap-card{padding:14px}.home-swap-widget .swap-form-grid{grid-template-columns:1fr}.home-swap-widget .instaswap-heading{gap:8px}}
