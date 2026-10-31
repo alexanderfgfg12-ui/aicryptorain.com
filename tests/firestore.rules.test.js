@@ -8,6 +8,7 @@ import {
 } from '@firebase/rules-unit-testing'
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -120,6 +121,7 @@ test('common personal data and links are rejected by Firestore rules', async (t)
 test('only the author can delete a message and its owner record', async () => {
   const owner = anonymousDb('anon-user')
   await assertSucceeds(publish(owner, 'mine'))
+  await assertFails(deleteDoc(doc(owner, 'communityMessages', 'mine')))
   const deletion = writeBatch(owner)
   deletion.delete(doc(owner, 'communityMessages', 'mine'))
   deletion.delete(doc(owner, 'communityMessageOwners', 'mine'))
