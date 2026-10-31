@@ -38,7 +38,8 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if isAnonymousUser()
         && exists(/databases/$(database)/documents/communityMessageOwners/$(messageId))
-        && get(/databases/$(database)/documents/communityMessageOwners/$(messageId)).data.ownerUid == request.auth.uid;
+        && get(/databases/$(database)/documents/communityMessageOwners/$(messageId)).data.ownerUid == request.auth.uid
+        && !existsAfter(/databases/$(database)/documents/communityMessageOwners/$(messageId));
     }
 
     // Ownership metadata is private; public message reads never reveal anonymous UIDs.
