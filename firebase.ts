@@ -20,4 +20,6 @@ const anonymousApp = firebaseConfigured
 export const auth = app ? getAuth(app) : null
 export const communityAuth = anonymousApp ? getAuth(anonymousApp) : null
 export const db = app ? getFirestore(app) : null
+// Firestore must use the same Firebase app as communityAuth so requests carry its anonymous ID token.
+export const communityDb = anonymousApp ? getFirestore(anonymousApp) : null
 export const googleProvider = new GoogleAuthProvider()
