@@ -21,8 +21,8 @@ service cloud.firestore {
       allow delete: if isVerifiedUser() && resource.data.authorUid == request.auth.uid;
 
       match /comments/{commentId} {
-        allow read: if true;
-        allow create: if isVerifiedUser()
+        allow read: if exists(/databases/$(database)/documents/communityPosts/$(postId));
+        allow create: if exists(/databases/$(database)/documents/communityPosts/$(postId)) && isVerifiedUser()
           && request.resource.data.keys().hasOnly(['authorUid', 'authorName', 'body', 'createdAt'])
           && request.resource.data.authorUid == request.auth.uid
           && request.resource.data.authorName is string
