@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import {
   createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword,
-  signInWithPopup, signOut, sendEmailVerification, reload, type User,
+  signInWithPopup, signOut, sendEmailVerification, reload, getIdToken, type User,
 } from 'firebase/auth'
 import { auth, firebaseConfigured, googleProvider } from './firebase'
 import { translations, type Lang } from './i18n'
@@ -425,7 +425,7 @@ export default function App() {
 
       {tab === 'membership' && <Membership email={user?.email} lang={lang} firebaseReady={firebaseConfigured} onSignIn={() => { setAuthOpen(true); setAuthMessage('') }} onSignOut={() => { if (auth) void signOut(auth) }}/ >}
 
-      {tab === 'community' && <Community user={user} lang={lang} onResendVerification={async () => { if (user) await sendEmailVerification(user) }} onRefreshUser={async () => { if (user) { await reload(user); setUser(auth?.currentUser ?? null); setAuthRevision(value => value + 1) } }}/ >}
+      {tab === 'community' && <Community user={user} lang={lang} onResendVerification={async () => { if (user) await sendEmailVerification(user) }} onRefreshUser={async () => { if (user) { await reload(user); await getIdToken(user, true); setUser(auth?.currentUser ?? null); setAuthRevision(value => value + 1) } }}/ >}
 
       {tab === 'news' && <section className="page-content"><div className="section-heading"><div><h2>{t.newsTitle}</h2><p>{t.source}: cryptocurrency.cv</p></div><button className="button-ghost" onClick={() => void loadNews()}><RefreshCw size={16}/>{t.refresh}</button></div><section className="panel news-panel"><NewsList articles={articles} loading={newsLoading} error={newsError} t={t}/></section></section>}
 
