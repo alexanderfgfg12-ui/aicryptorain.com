@@ -23,5 +23,7 @@ jobs:
           node-version: 20
       - name: Install dependencies
         run: npm install
+      - name: Firestore security rules emulator tests
+        run: npm run test:rules
       - name: TypeScript and Vite production build
         run: npm run build
