@@ -5,8 +5,9 @@ This version replaces email/password participation with a separate Firebase Anon
 ## Firebase setup
 1. Enable **Authentication → Sign-in method → Anonymous** in Firebase Console.
 2. Firestore must be enabled in the same Firebase project.
-3. Test `firestore.rules` in the Firebase Emulator Suite, then publish the rules deliberately.
-4. Keep the existing `VITE_FIREBASE_*` build variables configured.
+3. Run `npm install` then `npm run test:rules` to test `firestore.rules` against the local Firebase Emulator Suite. GitHub Actions runs this test on branch pushes and pull requests targeting `main`.
+4. Only after the emulator suite passes, publish the rules deliberately with `firebase deploy --only firestore:rules` from an authorized local environment.
+5. Keep the existing `VITE_FIREBASE_*` build variables configured.
 
 ## Community behavior
 - No email address, password, Google sign-in, wallet connection, profile name, or phone number is requested for community participation.
@@ -24,7 +25,7 @@ This version replaces email/password participation with a separate Firebase Anon
 - Important: the community Firestore instance is initialized from the same named Firebase app as the anonymous Auth instance, so Firestore requests carry the anonymous user's auth token. Do not switch this back to the main site's default app.
 - Anonymous sign-in reduces password collection and password-reset risks, but it does not prevent spam, bots, harassment, abuse, or correlation of sessions.
 - Enable Firebase App Check after testing its provider configuration, and review the private `communityReports` collection regularly in the Firebase console. A trusted backend is needed for enforceable rate limits, automated report triage, moderator roles, and bans. Complete a privacy/legal review before public launch. App Check and text filters are not complete abuse prevention.
-- Test all rules in the Firebase Emulator Suite before deployment. A repository commit does not deploy Firestore rules.
+- Test all rules in the Firebase Emulator Suite before deployment. Run `npm run test:rules` locally. A repository commit does not deploy Firestore rules.
 - Firebase free-tier quotas apply; usage beyond free allowances may require billing. Do not enable billing without reviewing costs.
 
 
