@@ -126,7 +126,8 @@ test('only the author can delete a message and its owner record', async () => {
   deletion.delete(doc(owner, 'communityMessages', 'mine'))
   deletion.delete(doc(owner, 'communityMessageOwners', 'mine'))
   await assertSucceeds(deletion.commit())
-  await assertFails(getDoc(doc(owner, 'communityMessages', 'mine')))
+  const deletedMessage = await assertSucceeds(getDoc(doc(owner, 'communityMessages', 'mine')))
+  assert.equal(deletedMessage.exists(), false)
 
   const another = anonymousDb('another-user')
   await assertSucceeds(publish(owner, 'theirs'))
