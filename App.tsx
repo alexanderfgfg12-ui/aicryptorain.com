@@ -19,7 +19,7 @@ import Membership from './Membership'
 // ==========================================
 type SwapToken = { id: string; symbol?: string; name?: string; minAmount?: string | number }
 type SwapQuote = { estimatedOut?: string | number; estimatedOutUsd?: string | number; etaSeconds?: number; feeBreakdown?: { type?: string; asset?: string; amount?: string | number; amountUsd?: string | number }[] }
-type SwapOrder = { txid?: string; id?: string; depositAddress?: string; depositAmount?: string | number; depositInfo?: { depositAddress?: string; depositNetwork?: string; depositToken?: string; depositAmount?: string | number; depositMemo?: string }[] }
+type SwapOrder = { txid?: string; id?: string; depositAddress?: string; depositAmount?: string | number; depositAmountExact?: string | number; depositMemo?: string; depositInfo?: { depositAddress?: string; depositNetwork?: string; depositToken?: string; depositAmount?: string | number; depositAmountExact?: string | number; depositMemo?: string }[] }
 const INSTASWAP_API = 'https://walletlessapi.instaswap.com'
 
 async function instaswapRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -120,10 +120,10 @@ function InstaSwapWidget() {
       </div>}
       {order && <div className="swap-order-result" aria-live="polite"><span className="official-tag">تم إنشاء الطلب لدى InstaSwap</span><h3>راجع تفاصيل الإيداع قبل التحويل</h3><p>رقم الطلب: <code>{order.txid || order.id}</code></p>
         {depositAddress && <div className="deposit-address"><small>عنوان الإيداع</small><code>{depositAddress}</code><button type="button" className="button-ghost" onClick={() => { if (navigator.clipboard?.writeText) void navigator.clipboard.writeText(depositAddress) }}>نسخ العنوان</button></div>}
-        {deposit?.depositMemo && <p><b>Memo / Tag:</b> <code>{deposit.depositMemo}</code> — أدرجه إذا كان مطلوباً.</p>}
-        <p>أرسل فقط <b>{deposit?.depositAmount || order.depositAmount || amount}</b> من <b>{deposit?.depositNetwork || fromId.split('.')[0]}</b> / <b>{deposit?.depositToken || fromId.split('.')[1]}</b> إلى العنوان المعروض. لا ترسل من شبكة مختلفة.</p>
+        {(deposit?.depositMemo || order.depositMemo) && <p><b>Memo / Tag:</b> <code>{deposit?.depositMemo || order.depositMemo}</code> — أدرجه إذا كان مطلوباً.</p>}
+        <p>أرسل فقط <b>{deposit?.depositAmountExact || deposit?.depositAmount || order.depositAmountExact || order.depositAmount || amount}</b> من <b>{deposit?.depositNetwork || fromId.split('.')[0]}</b> / <b>{deposit?.depositToken || fromId.split('.')[1]}</b> إلى العنوان المعروض. لا ترسل من شبكة مختلفة.</p>
         <button type="button" className="button-ghost" onClick={() => void refreshStatus()}><RefreshCw size={16}/> تحديث حالة الطلب</button>
-        {status && <pre className="swap-status">{JSON.stringify(status, null, 2)}</pre>}
+        {status && <div className="swap-status-panel"><b>حالة الطلب: {status.state || status.status || status.orderStatus || 'تم استلام تحديث الحالة'}</b><pre className="swap-status">{JSON.stringify(status, null, 2)}</pre></div>}
       </div>}
       <p className="data-note"><ShieldCheck size={15}/> المبادلة تُنفّذ عبر InstaSwap وبروتوكولاتها. راجع السعر والرسوم والحدود ومخاطر الشبكات قبل الإرسال؛ لا تضع مفاتيحك الخاصة أو عبارة الاسترداد في الموقع.</p>
     </div>
