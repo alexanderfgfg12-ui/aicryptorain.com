@@ -4,6 +4,7 @@ import {
   CircleHelp, Globe2, LayoutDashboard, LogIn, LogOut, Menu, Newspaper,
   RefreshCw, Search, ShieldCheck, Sparkles, Star, X, Send, CircleUserRound,
 } from 'lucide-react'
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import {
   createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword,
   signInWithPopup, signOut, type User,
@@ -133,7 +134,7 @@ function InstaSwapWidget() {
 
 type Ticker = { symbol: string; lastPrice: string; priceChangePercent: string; quoteVolume: string }
 type Article = { title: string; url: string; source: string; publishedAt?: string }
-type Tab = 'dashboard' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'news' | 'assistant' | 'swap'
+type Tab = 'dashboard' | 'analytics' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'news' | 'assistant' | 'swap'
 
 const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'TRXUSDT']
 const currencyFormat = (value: number, lang: Lang) => new Intl.NumberFormat(lang === 'ar' ? 'en-US' : lang, {
@@ -307,6 +308,7 @@ export default function App() {
 
   const navItems: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
     { id: 'dashboard', label: t.dashboard, icon: LayoutDashboard },
+    { id: 'analytics', label: lang === 'ar' ? 'التحليل الفني' : lang === 'fr' ? 'Analyse technique' : 'Technical analysis', icon: Activity },
     { id: 'markets', label: t.markets, icon: Activity },
     { id: 'scanner', label: lang === 'ar' ? 'ماسح السوق' : lang === 'fr' ? 'Scanner' : 'Scanner', icon: Search },
     { id: 'alerts', label: lang === 'ar' ? 'تنبيهات الأسعار' : lang === 'fr' ? 'Alertes' : 'Price alerts', icon: Bell },
@@ -367,6 +369,7 @@ export default function App() {
 
         <div className="feature-strip" aria-label="Platform tools">
           <button className="feature-tile" onClick={() => navigate('markets')}><span className="feature-icon"><Activity size={19}/></span><span><b>أسعار مباشرة</b><small>متابعة الأصول وحركة 24 ساعة</small></span><ArrowUpRight size={16}/></button>
+          <button className="feature-tile" onClick={() => navigate('analytics')}><span className="feature-icon"><LayoutDashboard size={19}/></span><span><b>لوحة التحليل الفني</b><small>شموع ومؤشرات واتجاهات السوق</small></span><ArrowUpRight size={16}/></button>
           <button className="feature-tile" onClick={() => navigate('scanner')}><span className="feature-icon"><Search size={19}/></span><span><b>ماسح السوق</b><small>اكتشف الارتفاعات والانخفاضات</small></span><ArrowUpRight size={16}/></button>
           <button className="feature-tile" onClick={() => navigate('swap')}><span className="feature-icon"><RefreshCw size={19}/></span><span><b>تبديل InstaSwap</b><small>عرض سعر وتتبع المبادلة</small></span><ArrowUpRight size={16}/></button>
         </div>
@@ -390,7 +393,10 @@ export default function App() {
           <section className="panel"><div className="panel-heading"><div><h3>{t.newsTitle}</h3><p>Curated headlines</p></div><button className="icon-button" aria-label={t.refresh} onClick={() => void loadNews()}><RefreshCw size={17}/></button></div>
             <NewsList articles={articles.slice(0, 4)} loading={newsLoading} error={newsError} t={t}/><button className="button-wide" onClick={() => navigate('news')}>{t.news} <span>↗</span></button>
           </section>
-          <section className="affiliate-panel"><div className="affiliate-glow"/><div className="affiliate-icon"><Activity size={23}/></div><div className="pill gold-pill">BINANCE PARTNER LINK</div><h3>{t.affiliateTitle}</h3><p>{t.affiliateBody}</p><a className="button-primary affiliate-link" href={referralUrl} target="_blank" rel="noopener noreferrer sponsored">{t.register}<ArrowUpRight size={17}/></a><small className="disclosure">Affiliate link • Binance terms apply</small></section>
+          <div className="partner-stack">
+            <section className="affiliate-panel partner-card binance-partner"><div className="affiliate-glow"/><div className="affiliate-icon"><Activity size={23}/></div><div className="pill gold-pill">BINANCE AFFILIATE</div><h3>{t.affiliateTitle}</h3><p>{t.affiliateBody}</p><a className="button-primary affiliate-link" href={referralUrl} target="_blank" rel="noopener noreferrer sponsored">{t.register}<ArrowUpRight size={17}/></a><small className="disclosure">رابط شراكة • تطبق شروط Binance</small></section>
+            <section className="affiliate-panel partner-card instaswap-partner"><div className="affiliate-glow"/><div className="affiliate-icon"><RefreshCw size={23}/></div><div className="pill gold-pill">INSTASWAP PARTNER</div><h3>بدّل العملات عبر InstaSwap</h3><p>قارن عرض السعر والرسوم، أنشئ طلب التبديل وتابع حالته من داخل المنصة.</p><button className="button-primary affiliate-link" onClick={() => navigate('swap')}>ابدأ التبديل <ArrowUpRight size={17}/></button><small className="disclosure">تفعيل الإحالة يتطلب معرّف الشريك المعتمد</small></section>
+          </div>
         </div>
         <section className="panel converter-panel"><div className="panel-heading"><div><h3>{t.convertTitle}</h3><p>{t.convertDescription}</p></div><span className="official-tag"><ShieldCheck size={15}/> Binance</span></div><BinanceWidget lang={lang}/></section>
       </section>}
@@ -409,6 +415,8 @@ export default function App() {
         </section>
         <section className="panel converter-panel"><div className="panel-heading"><div><h3>{t.convertTitle}</h3><p>{t.convertDescription}</p></div><span className="official-tag">Binance</span></div><BinanceWidget lang={lang}/></section>
       </section>}
+
+      {tab === 'analytics' && <section className="page-content"><AnalyticsDashboard lang={lang}/></section>}
 
       {tab === 'scanner' && <MarketScanner tickers={tickers} loading={loadingPrices} lang={lang}/>}
 
@@ -497,4 +505,71 @@ function BinanceWidget({ lang }: { lang: Lang }) {
     }
   }, [lang])
   return <div id={`binance-widget-${lang}`} className="binance-widget-host"><div className="widget-placeholder"><Activity size={20}/> Loading Binance converter…</div></div>
+}
+
+
+type CandlePoint = { time: string; timestamp: number; open: number; high: number; low: number; close: number; volume: number; sma20?: number; ema50?: number; rsi?: number; macd?: number; signal?: number; histogram?: number }
+const emaSeries = (values: number[], period: number) => {
+  const k = 2 / (period + 1)
+  return values.reduce<number[]>((out, value, i) => { out.push(i === 0 ? value : value * k + out[i - 1] * (1 - k)); return out }, [])
+}
+function addIndicators(rows: CandlePoint[]) {
+  const closes = rows.map(x => x.close)
+  const ema12 = emaSeries(closes, 12), ema26 = emaSeries(closes, 26), macd = closes.map((_,i) => ema12[i] - ema26[i])
+  const signal = emaSeries(macd, 9)
+  return rows.map((row,i) => {
+    const slice = closes.slice(Math.max(0,i-19),i+1)
+    const gains:number[] = [], losses:number[] = []
+    for (let j=Math.max(1,i-13); j<=i; j++) { const d=closes[j]-closes[j-1]; gains.push(Math.max(0,d)); losses.push(Math.max(0,-d)) }
+    const avgGain=gains.length?gains.reduce((s,x)=>s+x,0)/gains.length:0
+    const avgLoss=losses.length?losses.reduce((s,x)=>s+x,0)/losses.length:0
+    const rsi=avgLoss===0?(avgGain===0?50:100):100-(100/(1+avgGain/avgLoss))
+    return {...row,sma20:slice.reduce((s,x)=>s+x,0)/slice.length,ema50:emaSeries(closes,50)[i],rsi,macd:macd[i],signal:signal[i],histogram:macd[i]-signal[i]}
+  })
+}
+function AnalyticsDashboard({lang}:{lang:Lang}) {
+  const [symbol,setSymbol]=useState('BTCUSDT')
+  const [interval,setIntervalValue]=useState('1h')
+  const [rows,setRows]=useState<CandlePoint[]>([])
+  const [busy,setBusy]=useState(true)
+  const [error,setError]=useState('')
+  const [updated,setUpdated]=useState<Date|null>(null)
+  const isAr=lang==='ar'
+  const fmt=(v:number)=>new Intl.NumberFormat(isAr?'en-US':lang,{maximumFractionDigits:v<1?5:2}).format(v)
+  useEffect(()=>{
+    let active=true
+    const load=async()=>{
+      setBusy(true);setError('')
+      try {
+        const response=await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=120`,{cache:'no-store'})
+        if(!response.ok) throw new Error('Market data unavailable')
+        const data=await response.json() as unknown[][]
+        const parsed=data.map(k=>({timestamp:Number(k[0]),time:new Date(Number(k[0])).toLocaleString(lang==='ar'?'ar-MA':lang,{month:'short',day:'numeric',hour:interval==='1d'||interval==='1w'?undefined:'2-digit',minute:interval==='1d'||interval==='1w'?undefined:'2-digit'}),open:Number(k[1]),high:Number(k[2]),low:Number(k[3]),close:Number(k[4]),volume:Number(k[5])}))
+        if(active){setRows(addIndicators(parsed));setUpdated(new Date())}
+      } catch {if(active){setRows([]);setError(isAr?'تعذر تحميل بيانات الرسم من Binance حالياً.':'Unable to load Binance chart data right now.')}}
+      finally {if(active)setBusy(false)}
+    }
+    void load()
+    const timer=window.setInterval(load,60000)
+    return ()=>{active=false;window.clearInterval(timer)}
+  },[symbol,interval,lang,isAr])
+  const last=rows[rows.length-1], previous=rows[rows.length-2]
+  const delta=last&&previous?((last.close-previous.close)/previous.close)*100:0
+  const trend=last?(last.close>=(last.sma20||last.close)?(isAr?'فوق متوسط 20':'Above SMA 20'):(isAr?'دون متوسط 20':'Below SMA 20')):'—'
+  return <div className="analytics-dashboard">
+    <div className="section-heading analytics-title"><div><h2>{isAr?'مركز التحليل الفني':'Technical analysis center'}</h2><p>{isAr?'بيانات السوق من Binance • المؤشرات محسوبة من الشموع المعروضة':'Binance market feed • indicators calculated from displayed candles'}</p></div><span className="official-tag"><span className="live-dot"/> {isAr?'بيانات مباشرة':'Live data'}</span></div>
+    <div className="analytics-controls panel"><label>{isAr?'الأصل':'Asset'}<select value={symbol} onChange={e=>setSymbol(e.target.value)}>{['BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT','ADAUSDT','DOGEUSDT','TRXUSDT'].map(s=><option key={s}>{s}</option>)}</select></label><div className="timeframe-control" aria-label="Chart timeframe">{[['15m','15m'],['1h','1H'],['4h','4H'],['1d','1D'],['1w','1W']].map(([v,l])=><button key={v} className={interval===v?'selected':''} onClick={()=>setIntervalValue(v)}>{l}</button>)}</div><span className="analytics-updated">{updated?(isAr?'آخر تحديث: ':'Updated: ')+updated.toLocaleTimeString():(isAr?'جارٍ التحميل':'Loading')}</span></div>
+    {error&&<div className="inline-warning"><CircleHelp size={17}/>{error}</div>}
+    <div className="analytics-kpis">
+      <div className="metric-card"><small>{isAr?'السعر الحالي':'Last price'}</small><strong>{last?fmt(last.close):'—'}</strong><span className={delta>=0?'positive':'negative'}>{last?(delta>=0?'+':'')+delta.toFixed(2)+'%':'—'} <small>{isAr?'مقارنة بالشمعة السابقة':'vs previous candle'}</small></span></div>
+      <div className="metric-card"><small>{isAr?'أعلى سعر في الفترة':'Period high'}</small><strong>{rows.length?fmt(Math.max(...rows.map(x=>x.high))):'—'}</strong><span>{isAr?'أدنى سعر':'Period low'}: {rows.length?fmt(Math.min(...rows.map(x=>x.low))):'—'}</span></div>
+      <div className="metric-card"><small>{isAr?'حجم التداول في آخر شمعة':'Latest candle volume'}</small><strong>{last?fmt(last.volume):'—'}</strong><span>{symbol.replace('USDT','')} volume</span></div>
+      <div className="metric-card"><small>RSI (14)</small><strong>{last?.rsi?.toFixed(1)||'—'}</strong><span>{last?(last.rsi!>=70?(isAr?'تشبع شرائي محتمل':'Potentially overbought'):last.rsi!<=30?(isAr?'تشبع بيعي محتمل':'Potentially oversold'):(isAr?'منطقة محايدة':'Neutral zone')):'—'}</span></div>
+    </div>
+    <section className="panel chart-panel"><div className="panel-heading"><div><h3>{symbol} · {isAr?'حركة السعر':'Price action'}</h3><p>{isAr?'السعر مع المتوسطين المتحركين SMA 20 و EMA 50':'Price with SMA 20 and EMA 50'}</p></div><span className={delta>=0?'positive':'negative'}>{last?fmt(last.close):'—'}</span></div>{busy&&!rows.length?<div className="chart-loading">{isAr?'جارٍ تحميل الرسم البياني…':'Loading chart…'}</div>:<ResponsiveContainer width="100%" height={330}><AreaChart data={rows}><defs><linearGradient id="priceFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#e9bd58" stopOpacity={.28}/><stop offset="95%" stopColor="#e9bd58" stopOpacity={0}/></linearGradient></defs><CartesianGrid stroke="#273246" strokeDasharray="3 3"/><XAxis dataKey="time" minTickGap={35} tick={{fill:'#9aa8bd',fontSize:10}}/><YAxis orientation={isAr?'right':'left'} domain={['auto','auto']} tick={{fill:'#9aa8bd',fontSize:10}} tickFormatter={fmt} width={78}/><Tooltip contentStyle={{background:'#111827',border:'1px solid #344158',borderRadius:10,color:'#fff'}} formatter={(v:number,n:string)=>[fmt(v),n]}/><Area type="monotone" dataKey="close" name="Close" stroke="#e9bd58" strokeWidth={2} fill="url(#priceFill)" isAnimationActive={false}/><Line type="monotone" dataKey="sma20" name="SMA 20" stroke="#52c7d8" dot={false} strokeWidth={1.5} isAnimationActive={false}/><Line type="monotone" dataKey="ema50" name="EMA 50" stroke="#a78bfa" dot={false} strokeWidth={1.5} isAnimationActive={false}/></AreaChart></ResponsiveContainer>}</section>
+    <div className="analytics-chart-grid"><section className="panel chart-panel"><div className="panel-heading"><div><h3>{isAr?'حجم التداول':'Trading volume'}</h3><p>{isAr?'حجم كل شمعة':'Per-candle volume'}</p></div></div><ResponsiveContainer width="100%" height={210}><BarChart data={rows}><CartesianGrid stroke="#273246" strokeDasharray="3 3"/><XAxis dataKey="time" hide/><YAxis tick={{fill:'#9aa8bd',fontSize:9}} width={55}/><Tooltip contentStyle={{background:'#111827',border:'1px solid #344158'}}/><Bar dataKey="volume" name="Volume" fill="#3c9b89" radius={[3,3,0,0]}/></BarChart></ResponsiveContainer></section>
+      <section className="panel chart-panel"><div className="panel-heading"><div><h3>MACD (12, 26, 9)</h3><p>{isAr?'الزخم وتقاطع خط الإشارة':'Momentum and signal crossover'}</p></div></div><ResponsiveContainer width="100%" height={210}><LineChart data={rows}><CartesianGrid stroke="#273246" strokeDasharray="3 3"/><XAxis dataKey="time" hide/><YAxis tick={{fill:'#9aa8bd',fontSize:9}} width={55}/><Tooltip contentStyle={{background:'#111827',border:'1px solid #344158'}}/><ReferenceLine y={0} stroke="#8290a5"/><Line type="monotone" dataKey="macd" name="MACD" stroke="#e9bd58" dot={false} isAnimationActive={false}/><Line type="monotone" dataKey="signal" name="Signal" stroke="#a78bfa" dot={false} isAnimationActive={false}/></LineChart></ResponsiveContainer></section></div>
+    <section className="panel chart-panel"><div className="panel-heading"><div><h3>RSI (14)</h3><p>{isAr?'مؤشر القوة النسبية — قراءة وصفية وليست إشارة تداول':'Relative strength index — informational, not a trade signal'}</p></div><b>{last?.rsi?.toFixed(1)||'—'}</b></div><ResponsiveContainer width="100%" height={190}><LineChart data={rows}><CartesianGrid stroke="#273246" strokeDasharray="3 3"/><XAxis dataKey="time" hide/><YAxis domain={[0,100]} ticks={[0,30,50,70,100]} tick={{fill:'#9aa8bd',fontSize:9}} width={35}/><Tooltip contentStyle={{background:'#111827',border:'1px solid #344158'}}/><ReferenceLine y={70} stroke="#f07883" strokeDasharray="4 4"/><ReferenceLine y={30} stroke="#42c99b" strokeDasharray="4 4"/><Line type="monotone" dataKey="rsi" name="RSI" stroke="#52c7d8" dot={false} isAnimationActive={false}/></LineChart></ResponsiveContainer></section>
+    <div className="analytics-footnote"><ShieldCheck size={16}/><span>{isAr?'المؤشرات محسوبة محلياً من بيانات شموع Binance العامة؛ قد تختلف النتائج حسب المنصة والإعدادات. ليست نصيحة مالية ولا تنفذ صفقات.':'Indicators are calculated locally from public Binance candles; values may vary by venue and settings. Educational only; no trades are executed.'}</span><b>{trend}</b></div>
+  </div>
 }
