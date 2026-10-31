@@ -1,13 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { onAuthStateChanged, setPersistence, inMemoryPersistence, signInAnonymously, type User } from 'firebase/auth'
-import { addDoc, collection, deleteDoc, doc, limit, onSnapshot, orderBy, query, serverTimestamp, setDoc } from 'firebase/firestore'
+import { collection, deleteDoc, doc, limit, onSnapshot, orderBy, query, serverTimestamp, setDoc, writeBatch } from 'firebase/firestore'
 import { communityAuth, communityDb as db } from './firebase'
 import type { Lang } from './i18n'
 import { containsSensitiveData } from './communityModeration'
 
 type Message = {
   id: string
-  authorUid: string
   character: string
   avatar: string
   body: string
@@ -34,7 +33,7 @@ const copy = {
     count: 'تعليق', choose: 'اختر شخصيتك الخيالية', rules: 'نص فقط: لا صور، لا ملفات، لا روابط، لا رسائل خاصة.',
     privacy: 'لا نطلب بريداً إلكترونياً أو كلمة مرور. تستخدم الجلسة حساب Firebase مجهولاً بمعرّف عشوائي؛ هذا يخفي هويتك عن بقية الأعضاء لكنه ليس إخفاءً كاملاً عن مزود الخدمة.',
     sensitive: 'تم رفض التعليق: لا تنشر أسماء حقيقية أو بيانات اتصال أو هوية أو معلومات مالية أو كلمات مرور أو مفاتيح أو عناوين محافظ أو روابط.',
-    max: 'الحد الأقصى 500 حرف.',
+    max: 'الحد الأقصى 500 حرف.', rateLimit: 'انتظر قليلاً قبل إرسال تعليق آخر.', report: 'إبلاغ عن تعليق', reported: 'تم الإبلاغ', reporting: 'جارٍ الإبلاغ…', delete: 'حذف تعليقي',
   },
   fr: {
     title: 'CryptoCommunity Anonymous', subtitle: 'Un espace pseudonyme pour discuter, jouer des personnages fictifs et partager des mèmes textuels.',
@@ -44,7 +43,7 @@ const copy = {
     count: 'commentaire', choose: 'Choisissez votre personnage fictif', rules: 'Texte uniquement : aucune image, pièce jointe, URL ou messagerie privée.',
     privacy: 'Aucun e-mail ni mot de passe demandé. La session utilise un compte Firebase anonyme avec un identifiant aléatoire. Cela vous pseudonymise auprès des autres membres, mais pas totalement auprès du fournisseur.',
     sensitive: 'Commentaire bloqué : ne publiez pas de nom réel, coordonnées, données d’identité ou financières, mots de passe, clés, adresses de portefeuille ou liens.',
-    max: '500 caractères maximum.',
+    max: '500 caractères maximum.', rateLimit: 'Veuillez patienter avant un autre commentaire.', report: 'Signaler', reported: 'Signalé', reporting: 'Envoi…', delete: 'Supprimer mon commentaire',
   },
   en: {
     title: 'CryptoCommunity Anonymous', subtitle: 'A pseudonymous space for casual discussion, fictional crypto characters and text memes.',
@@ -54,7 +53,7 @@ const copy = {
     count: 'comments', choose: 'Choose your fictional character', rules: 'Text only: no images, files, links or private messages.',
     privacy: 'No email or password is requested. The session uses an anonymous Firebase account with a random identifier. This hides your identity from other members, but not completely from the service provider.',
     sensitive: 'Blocked: do not post real names, contact or identity details, financial data, passwords, keys, wallet addresses or links.',
-    max: '500 characters maximum.',
+    max: '500 characters maximum.', rateLimit: 'Please wait before posting another comment.', report: 'Report comment', reported: 'Reported', reporting: 'Reporting…', delete: 'Delete my comment',
   },
 } as const
 
@@ -75,6 +74,7 @@ export default function Community({ lang }: {
   const [selected, setSelected] = useState(0)
   const [reporting, setReporting] = useState<string | null>(null)
   const [reportedIds, setReportedIds] = useState<string[]>([])
+  const [myMessageIds, setMyMessageIds] = useState<string[]>([])
   const [lastPublishedAt, setLastPublishedAt] = useState(0)
   const character = characters[selected]
   const localizedCharacters = characters
@@ -112,17 +112,20 @@ export default function Community({ lang }: {
     event.preventDefault()
     const text = body.trim()
     if (!db || !anonUser?.isAnonymous || !text || text.length > 500 || busy) return
-    if (Date.now() - lastPublishedAt < 5000) { setError('انتظر قليلاً قبل إرسال تعليق آخر.'); return }
+    if (Date.now() - lastPublishedAt < 5000) { setError(t.rateLimit); return }
     if (containsSensitiveData(text) || /(?:https?:\/\/|www\.|\b[a-z0-9-]+\.(?:com|net|org|io|me|co)\b)/i.test(text)) {
       setError(t.sensitive)
       return
     }
     setBusy(true); setError('')
     try {
-      await addDoc(collection(db, 'communityMessages'), {
-        authorUid: anonUser.uid, character: character.name, avatar: character.avatar,
-        body: text, createdAt: serverTimestamp(),
-      })
+      const messageRef = doc(collection(db, 'communityMessages'))
+      const ownerRef = doc(db, 'communityMessageOwners', messageRef.id)
+      const batch = writeBatch(db)
+      batch.set(messageRef, { character: character.name, avatar: character.avatar, body: text, createdAt: serverTimestamp() })
+      batch.set(ownerRef, { ownerUid: anonUser.uid, createdAt: serverTimestamp() })
+      await batch.commit()
+      setMyMessageIds(current => [...current, messageRef.id])
       setBody('')
       setLastPublishedAt(Date.now())
     } catch { setError(t.error) } finally { setBusy(false) }
@@ -141,10 +144,15 @@ export default function Community({ lang }: {
     } catch { setError(t.error) } finally { setReporting(null) }
   }
 
-  const deleteOwnMessage = async (message: Message) => {
-    if (!db || !anonUser?.isAnonymous || message.authorUid !== anonUser.uid) return
-    try { await deleteDoc(doc(db, 'communityMessages', message.id)) }
-    catch { setError(t.error) }
+  const deleteOwnMessage = async (messageId: string) => {
+    if (!db || !anonUser?.isAnonymous || !myMessageIds.includes(messageId)) return
+    try {
+      const batch = writeBatch(db)
+      batch.delete(doc(db, 'communityMessages', messageId))
+      batch.delete(doc(db, 'communityMessageOwners', messageId))
+      await batch.commit()
+      setMyMessageIds(current => current.filter(id => id !== messageId))
+    } catch { setError(t.error) }
   }
 
   if (!db || !communityAuth) return <section className="page-content"><div className="panel community-state">{t.error}</div></section>
@@ -166,7 +174,7 @@ export default function Community({ lang }: {
     {loading ? <div className="panel community-state">{t.loading}</div> : messages.length === 0 ? <div className="panel community-state">{t.empty}</div> :
       <div className="community-feed">{messages.map(message => <article className="panel community-post" key={message.id}>
         <div className="community-author"><span className="avatar" aria-hidden="true">{message.avatar || '🎭'}</span><div><b>{message.character || 'شخصية مجهولة'}</b><small>{message.createdAt?.toDate ? message.createdAt.toDate().toLocaleString(lang) : ''}</small></div></div>
-        <p className="community-post-body">{message.body}</p><div className="community-post-actions"><button type="button" onClick={() => void reportMessage(message.id)} disabled={!anonUser || reportedIds.includes(message.id) || reporting === message.id}>{reportedIds.includes(message.id) ? 'تم الإبلاغ' : reporting === message.id ? 'جارٍ الإبلاغ…' : 'إبلاغ عن تعليق'}</button>{anonUser?.uid === message.authorUid && <button type="button" onClick={() => void deleteOwnMessage(message)}>حذف تعليقي</button>}</div>
+        <p className="community-post-body">{message.body}</p><div className="community-post-actions"><button type="button" onClick={() => void reportMessage(message.id)} disabled={!anonUser || reportedIds.includes(message.id) || reporting === message.id}>{reportedIds.includes(message.id) ? t.reported : reporting === message.id ? t.reporting : t.report}</button>{myMessageIds.includes(message.id) && <button type="button" onClick={() => void deleteOwnMessage(message.id)}>{t.delete}</button>}</div>
       </article>)}</div>}
   </section>
 }
