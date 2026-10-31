@@ -176,3 +176,5 @@ body{background:radial-gradient(ellipse at 72% -18%,rgba(77,111,180,.18),transpa
 .instaswap-aside a:hover{text-decoration:underline}
 @media(max-width:1000px){.instaswap-layout{grid-template-columns:1fr}}
 @media(max-width:760px){.feature-strip{grid-template-columns:1fr;gap:9px}.feature-tile{padding:12px}.hero-panel{border-radius:17px}.hero-copy h2{font-size:27px}.instaswap-card{padding:17px}.swap-form-grid,.swap-address-grid{grid-template-columns:1fr}.instaswap-heading h3{font-size:19px}.swap-result-main>strong{font-size:25px}}
+
+.swap-status-panel{margin-top:13px;padding:12px;border:1px solid var(--line);border-radius:10px;background:rgba(10,17,32,.72);font-size:11px}.swap-status-panel>b{color:var(--gold2)}
