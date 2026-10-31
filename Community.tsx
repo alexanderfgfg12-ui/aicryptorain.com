@@ -80,17 +80,18 @@ export default function Community({ lang }: {
   const localizedCharacters = characters
 
   useEffect(() => {
-    if (!communityAuth) { setReady(true); setLoading(false); return }
+    const auth = communityAuth
+    if (!auth) { setReady(true); setLoading(false); return }
     let alive = true
     let unsubscribe: (() => void) | undefined
     const start = async () => {
       try {
-        await setPersistence(communityAuth, inMemoryPersistence)
-        unsubscribe = onAuthStateChanged(communityAuth, current => {
+        await setPersistence(auth, inMemoryPersistence)
+        unsubscribe = onAuthStateChanged(auth, current => {
           if (!alive) return
           setAnonUser(current?.isAnonymous ? current : null)
           setReady(true)
-          if (!current) void signInAnonymously(communityAuth).catch(() => { if (alive) setError(t.error) })
+          if (!current) void signInAnonymously(auth).catch(() => { if (alive) setError(t.error) })
         })
       } catch { if (alive) { setReady(true); setLoading(false); setError(t.error) } }
     }
