@@ -287,7 +287,7 @@ export default function App() {
       const response = await fetch(aiApiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: prompt, language: lang }),
+        body: JSON.stringify({ message: prompt, language: lang, market: tickers.slice(0, 8) }),
       })
       if (!response.ok) throw new Error('AI endpoint failed')
       const data = await response.json() as { answer?: unknown }
