@@ -10,7 +10,7 @@ import {
 } from 'firebase/auth'
 import { auth, firebaseConfigured, googleProvider } from './firebase'
 import { translations, type Lang } from './i18n'
-import MarketScanner from './MarketScanner'
+import MarketScanner from './MarketScanner'\nimport AlertCenter from './AlertCenter'
 
 // ==========================================
 // قسم InstaSwap (مدمج مباشرة لتجنب مشاكل الملفات)
@@ -138,7 +138,7 @@ function InstaSwapWidget() {
 
 type Ticker = { symbol: string; lastPrice: string; priceChangePercent: string; quoteVolume: string }
 type Article = { title: string; url: string; source: string; publishedAt?: string }
-type Tab = 'dashboard' | 'markets' | 'scanner' | 'news' | 'assistant' | 'swap'
+type Tab = 'dashboard' | 'markets' | 'scanner' | 'alerts' | 'news' | 'assistant' | 'swap'
 
 const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'TRXUSDT']
 const currencyFormat = (value: number, lang: Lang) => new Intl.NumberFormat(lang === 'ar' ? 'en-US' : lang, {
@@ -309,7 +309,7 @@ export default function App() {
   const navItems: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
     { id: 'dashboard', label: t.dashboard, icon: LayoutDashboard },
     { id: 'markets', label: t.markets, icon: Activity },
-    { id: 'scanner', label: lang === 'ar' ? 'ماسح السوق' : lang === 'fr' ? 'Scanner' : 'Scanner', icon: Search }, 
+    { id: 'scanner', label: lang === 'ar' ? 'ماسح السوق' : lang === 'fr' ? 'Scanner' : 'Scanner', icon: Search },\n    { id: 'alerts', label: lang === 'ar' ? 'تنبيهات الأسعار' : lang === 'fr' ? 'Alertes' : 'Price alerts', icon: Bell }, 
     { id: 'news', label: t.news, icon: Newspaper },
     { id: 'assistant', label: t.assistant, icon: Sparkles },
     { id: 'swap', label: 'تبديل InstaSwap', icon: RefreshCw },
@@ -403,7 +403,7 @@ export default function App() {
         <section className="panel converter-panel"><div className="panel-heading"><div><h3>{t.convertTitle}</h3><p>{t.convertDescription}</p></div><span className="official-tag">Binance</span></div><BinanceWidget lang={lang}/></section>
       </section>}
 
-      {tab === 'scanner' && <MarketScanner tickers={tickers} loading={loadingPrices} lang={lang}/>}
+      {tab === 'scanner' && <MarketScanner tickers={tickers} loading={loadingPrices} lang={lang}/>}\n\n      {tab === 'alerts' && <AlertCenter tickers={tickers} lang={lang}/ >}
 
       {tab === 'news' && <section className="page-content"><div className="section-heading"><div><h2>{t.newsTitle}</h2><p>{t.source}: cryptocurrency.cv</p></div><button className="button-ghost" onClick={() => void loadNews()}><RefreshCw size={16}/>{t.refresh}</button></div><section className="panel news-panel"><NewsList articles={articles} loading={newsLoading} error={newsError} t={t}/></section></section>}
 
