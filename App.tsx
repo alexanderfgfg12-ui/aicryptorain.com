@@ -259,7 +259,7 @@ export default function App() {
       }).filter((x): x is Article => x !== null)
       const unique = Array.from(new Map(safe.map(article => [article.url, article])).values())
       unique.sort((a, b) => new Date(b.publishedAt || 0).getTime() - new Date(a.publishedAt || 0).getTime())
-      setArticles(unique.slice(0, 40))
+      setArticles(unique)
     } catch {
       setNewsError(true)
       setArticles([])
