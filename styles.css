@@ -266,3 +266,32 @@ input,select,textarea{color:#142018}
 .news-panel .news-copy p{font-size:11px;-webkit-line-clamp:3}
 
 .auth-notice{margin:12px 24px 0;padding:12px 16px;border:1px solid rgba(82,199,216,.35);border-radius:12px;background:rgba(82,199,216,.08);color:var(--text,#e8edf5);font-size:13px;line-height:1.6}
+
+/* Crypto Intelligence Desk */
+.crypto-intel{display:grid;gap:18px;max-width:1200px;margin:0 auto}
+.intel-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.intel-stat{padding:18px;border:1px solid #e0eae3;border-radius:15px;background:#fff;box-shadow:0 8px 24px rgba(15,45,25,.04)}
+.intel-stat span{display:block;color:#64756a;font-size:11px;margin-bottom:8px}
+.intel-stat strong{display:block;color:#142018;font-size:22px;font-variant-numeric:tabular-nums}
+.intel-section{padding:20px}
+.intel-section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.intel-section-head h3{margin:0;color:#142018;font-size:16px}
+.intel-section-head p{margin:5px 0 0;color:#64756a;font-size:11px;line-height:1.7}
+.intel-market-list{display:grid;gap:0}
+.intel-market-row{display:grid;grid-template-columns:minmax(90px,1fr) minmax(100px,1fr) minmax(90px,.7fr);gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid #edf2ee}
+.intel-market-row:last-child{border-bottom:0}
+.intel-market-symbol{font-weight:800;color:#17251b;font-size:13px}
+.intel-market-price{text-align:end;color:#17251b;font-size:13px;font-variant-numeric:tabular-nums}
+.intel-market-change{text-align:end;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.intel-positive{color:#07843f}.intel-negative{color:#c2413b}
+.intel-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.intel-link-card{display:flex;flex-direction:column;gap:7px;padding:16px;border:1px solid #e0eae3;border-radius:14px;background:#fff;color:#17251b;text-decoration:none;transition:border-color .15s,transform .15s}
+.intel-link-card:hover{border-color:#9bd9ad;transform:translateY(-2px)}
+.intel-link-card b{font-size:13px}.intel-link-card span{font-size:11px;color:#64756a;line-height:1.7}
+.intel-link-card small{font-size:10px;color:#087d3e;font-weight:700}
+.intel-learning-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.intel-learning-card{padding:16px;border:1px solid #e0eae3;border-radius:14px;background:#f8fcf9}
+.intel-learning-card b{display:block;color:#17251b;font-size:13px;margin-bottom:7px}
+.intel-learning-card p{margin:0;color:#64756a;font-size:11px;line-height:1.8}
+.intel-disclaimer{padding:14px 16px;border:1px solid #e7dfc8;border-radius:12px;background:#fffaf0;color:#755a24;font-size:11px;line-height:1.8}
+@media(max-width:760px){.intel-overview,.intel-links,.intel-learning-grid{grid-template-columns:1fr}.intel-section{padding:15px}.intel-market-row{grid-template-columns:1fr 1fr .8fr;gap:7px}.intel-market-symbol,.intel-market-price{font-size:12px}.intel-market-change{font-size:11px}}
