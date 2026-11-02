@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import {
-  createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword,
+  createUserWithEmailAndPassword, onAuthStateChanged, sendEmailVerification, signInWithEmailAndPassword,
   signInWithPopup, signOut, type User,
 } from 'firebase/auth'
 import { auth, firebaseConfigured, googleProvider } from './firebase'
@@ -289,12 +289,23 @@ export default function App() {
     setAuthBusy(true); setAuthMessage('')
     try {
       if (authMode === 'signup') {
-        await createUserWithEmailAndPassword(auth, email.trim(), password)
+        const credential = await createUserWithEmailAndPassword(auth, email.trim(), password)
+        auth.languageCode = lang
+        try {
+          await sendEmailVerification(credential.user, {
+            url: window.location.origin,
+            handleCodeInApp: false,
+          })
+          setAuthMessage(t.authVerificationSent)
+        } catch {
+          setAuthMessage(t.authVerificationFailed)
+        }
         setTab('membership')
       } else {
         await signInWithEmailAndPassword(auth, email.trim(), password)
+        setAuthMessage('')
       }
-      setAuthOpen(false); setPassword(''); setAuthMessage('')
+      setAuthOpen(false); setPassword('')
     } catch {
       setAuthMessage(t.authError)
     } finally { setAuthBusy(false) }
@@ -385,6 +396,7 @@ export default function App() {
           </button>
         </div>
       </header>
+      {authMessage && !authOpen && <div className="auth-notice" role="status">{authMessage}</div>}
 
       {tab === 'dashboard' && <section className="page-content">
         <div className="hero-panel">
@@ -460,7 +472,7 @@ export default function App() {
 
       {tab === 'alerts' && <AlertCenter tickers={tickers} lang={lang}/>}
 
-      {tab === 'membership' && <Membership email={user?.email} lang={lang} firebaseReady={firebaseConfigured} onSignIn={() => { setAuthOpen(true); setAuthMessage('') }} onSignOut={() => { if (auth) void signOut(auth) }}/ >}
+      {tab === 'membership' && <Membership email={user?.email} emailVerified={user?.emailVerified ?? false} lang={lang} firebaseReady={firebaseConfigured} onSignIn={() => { setAuthOpen(true); setAuthMessage('') }} onResendVerification={() => { if (auth?.currentUser) { auth.languageCode = lang; void sendEmailVerification(auth.currentUser, { url: window.location.origin, handleCodeInApp: false }).then(() => setAuthMessage(t.authVerificationSent)).catch(() => setAuthMessage(t.authVerificationFailed)) } }} onSignOut={() => { if (auth) void signOut(auth) }}/ >}
 
       {tab === 'news' && <section className="page-content"><div className="section-heading"><div><h2>{t.newsTitle}</h2><p>{t.newsSource}</p></div><button className="button-ghost" onClick={() => void loadNews()}><RefreshCw size={16}/>{t.refresh}</button></div><section className="panel news-panel"><NewsList articles={articles} loading={newsLoading} error={newsError} t={t}/></section></section>}
 
