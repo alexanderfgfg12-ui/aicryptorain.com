@@ -133,7 +133,7 @@ function InstaSwapWidget() {
 }
 
 type Ticker = { symbol: string; lastPrice: string; priceChangePercent: string; quoteVolume: string }
-type Article = { title: string; url: string; source: string; publishedAt?: string }
+type Article = { title: string; url: string; source: string; publishedAt?: string; description?: string; category?: string }
 type Tab = 'dashboard' | 'analytics' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'news' | 'assistant' | 'swap'
 
 const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'TRXUSDT']
@@ -212,32 +212,54 @@ export default function App() {
     setNewsLoading(true)
     setNewsError(false)
     try {
-      const res = await fetch('https://cryptocurrency.cv/api/news?limit=8')
-      if (!res.ok) throw new Error('News API unavailable')
-      const json: unknown = await res.json()
-      const rows = Array.isArray(json) ? json : (
-        json && typeof json === 'object' && 'data' in json && Array.isArray((json as {data: unknown}).data)
-          ? (json as {data: unknown[]}).data
-          : json && typeof json === 'object' && 'articles' in json && Array.isArray((json as {articles: unknown}).articles)
-            ? (json as {articles: unknown[]}).articles : []
-      )
-      const safe = (rows as Record<string, unknown>[]).map((row): Article | null => {
+      let rows: Record<string, unknown>[] = []
+      let imported = false
+      try {
+        const res = await fetch('https://raw.githubusercontent.com/alexanderfgfg12-ui/usamarket.live/main/news-data.json', { cache: 'no-store' })
+        if (!res.ok) throw new Error('US Market Live feed unavailable')
+        const json = await res.json() as { articles?: unknown[] }
+        rows = Array.isArray(json.articles) ? json.articles as Record<string, unknown>[] : []
+        imported = rows.length > 0
+      } catch {
+        // Keep the previous crypto-news provider as a fallback if the US Market Live feed is temporarily unavailable.
+        const fallback = await fetch('https://cryptocurrency.cv/api/news?limit=12', { cache: 'no-store' })
+        if (!fallback.ok) throw new Error('News providers unavailable')
+        const json: unknown = await fallback.json()
+        const items = Array.isArray(json) ? json : (
+          json && typeof json === 'object' && 'data' in json && Array.isArray((json as {data: unknown}).data)
+            ? (json as {data: unknown[]}).data
+            : json && typeof json === 'object' && 'articles' in json && Array.isArray((json as {articles: unknown}).articles)
+              ? (json as {articles: unknown[]}).articles : []
+        )
+        rows = items as Record<string, unknown>[]
+      }
+
+      const safe = rows.map((row): Article | null => {
         const title = typeof row.title === 'string' ? row.title : typeof row.headline === 'string' ? row.headline : ''
+        const id = typeof row.id === 'string' && /^[a-z0-9-]+$/i.test(row.id) ? row.id : ''
         const rawUrl = typeof row.url === 'string' ? row.url : typeof row.link === 'string' ? row.link : ''
         let url = ''
-        try {
-          const parsed = new URL(rawUrl)
-          if (parsed.protocol === 'https:' && !parsed.username && !parsed.password) url = parsed.href
-        } catch { /* Ignore malformed URLs. */ }
+        if (imported && id) {
+          url = `https://usamarket.live/news/${id}.html`
+        } else {
+          try {
+            const parsed = new URL(rawUrl)
+            if (parsed.protocol === 'https:' && !parsed.username && !parsed.password) url = parsed.href
+          } catch { /* Ignore malformed URLs. */ }
+        }
         if (!title || !url) return null
         return {
           title: title.slice(0, 240),
           url,
-          source: (typeof row.source === 'string' ? row.source : typeof row.author === 'string' ? row.author : 'News').slice(0, 80),
-          publishedAt: typeof row.published_at === 'string' ? row.published_at : typeof row.date === 'string' ? row.date : undefined,
+          source: (typeof row.source === 'string' ? row.source : typeof row.author === 'string' ? row.author : imported ? 'US Market Live' : 'News').slice(0, 80),
+          publishedAt: typeof row.pubDate === 'string' ? row.pubDate : typeof row.published_at === 'string' ? row.published_at : typeof row.date === 'string' ? row.date : undefined,
+          description: typeof row.description === 'string' ? row.description.replace(/<[^>]*>/g, '').slice(0, 220) : undefined,
+          category: typeof row.category === 'string' ? row.category.slice(0, 40) : undefined,
         }
-      }).filter((x): x is Article => x !== null).slice(0, 8)
-      setArticles(safe)
+      }).filter((x): x is Article => x !== null)
+      const unique = Array.from(new Map(safe.map(article => [article.url, article])).values())
+      unique.sort((a, b) => new Date(b.publishedAt || 0).getTime() - new Date(a.publishedAt || 0).getTime())
+      setArticles(unique.slice(0, 40))
     } catch {
       setNewsError(true)
       setArticles([])
@@ -406,7 +428,7 @@ export default function App() {
         </div>
 
         <div className="two-column">
-          <section className="panel"><div className="panel-heading"><div><h3>{t.newsTitle}</h3><p>Curated headlines</p></div><button className="icon-button" aria-label={t.refresh} onClick={() => void loadNews()}><RefreshCw size={17}/></button></div>
+          <section className="panel"><div className="panel-heading"><div><h3>{t.newsTitle}</h3><p>{t.newsSource}</p></div><button className="icon-button" aria-label={t.refresh} onClick={() => void loadNews()}><RefreshCw size={17}/></button></div>
             <NewsList articles={articles.slice(0, 4)} loading={newsLoading} error={newsError} t={t}/><button className="button-wide" onClick={() => navigate('news')}>{t.news} <span>↗</span></button>
           </section>
           <div className="partner-stack">
@@ -440,7 +462,7 @@ export default function App() {
 
       {tab === 'membership' && <Membership email={user?.email} lang={lang} firebaseReady={firebaseConfigured} onSignIn={() => { setAuthOpen(true); setAuthMessage('') }} onSignOut={() => { if (auth) void signOut(auth) }}/ >}
 
-      {tab === 'news' && <section className="page-content"><div className="section-heading"><div><h2>{t.newsTitle}</h2><p>{t.source}: cryptocurrency.cv</p></div><button className="button-ghost" onClick={() => void loadNews()}><RefreshCw size={16}/>{t.refresh}</button></div><section className="panel news-panel"><NewsList articles={articles} loading={newsLoading} error={newsError} t={t}/></section></section>}
+      {tab === 'news' && <section className="page-content"><div className="section-heading"><div><h2>{t.newsTitle}</h2><p>{t.newsSource}</p></div><button className="button-ghost" onClick={() => void loadNews()}><RefreshCw size={16}/>{t.refresh}</button></div><section className="panel news-panel"><NewsList articles={articles} loading={newsLoading} error={newsError} t={t}/></section></section>}
 
       {tab === 'assistant' && <section className="page-content"><div className="section-heading"><div><h2>{t.aiTitle}</h2><p>{t.aiDisclaimer}</p></div><span className="ai-badge"><Sparkles size={16}/> AI</span></div>
         <section className="panel assistant-panel"><div className="assistant-intro"><div className="assistant-avatar"><Sparkles size={25}/></div><div><h3>{t.aiTitle}</h3><p>{t.aiIntro}</p></div></div>
@@ -472,7 +494,7 @@ function NewsList({ articles, loading, error, t }: { articles: Article[]; loadin
   if (loading) return <div className="state-message"><RefreshCw className="spin" size={19}/>{t.loading}</div>
   if (error) return <div className="state-message"><CircleHelp size={20}/>{t.newsFallback}</div>
   if (!articles.length) return <div className="state-message"><Newspaper size={20}/>{t.noNews}</div>
-  return <ul className="news-list">{articles.map((article, i) => <li key={article.url}><span className="news-index">{String(i + 1).padStart(2, '0')}</span><div className="news-copy"><a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a><small>{article.source}{article.publishedAt ? ` · ${new Date(article.publishedAt).toLocaleDateString()}` : ''}</small></div><a className="news-open" href={article.url} target="_blank" rel="noopener noreferrer" aria-label={article.title}>↗</a></li>)}</ul>
+  return <ul className="news-list">{articles.map((article, i) => <li key={article.url}><span className="news-index">{String(i + 1).padStart(2, '0')}</span><div className="news-copy"><a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a><small>{article.source}{article.category ? ` · ${article.category}` : ''}{article.publishedAt ? ` · ${new Date(article.publishedAt).toLocaleDateString()}` : ''}</small>{article.description && <p>{article.description}</p>}</div><a className="news-open" href={article.url} target="_blank" rel="noopener noreferrer" aria-label={article.title}>↗</a></li>)}</ul>
 }
 
 function BinanceWidget({ lang }: { lang: Lang }) {
