@@ -14,7 +14,7 @@ import { translations, type Lang } from './i18n'
 import MarketScanner from './MarketScanner'
 import AlertCenter from './AlertCenter'
 import Membership from './Membership'
-import TokenStudio from './TokenStudio'
+import CryptoIntelligence from './CryptoIntelligence'
 
 // ==========================================
 // قسم InstaSwap (مدمج مباشرة لتجنب مشاكل الملفات)
@@ -135,7 +135,7 @@ function InstaSwapWidget() {
 
 type Ticker = { symbol: string; lastPrice: string; priceChangePercent: string; quoteVolume: string }
 type Article = { title: string; url: string; source: string; publishedAt?: string; description?: string; category?: string }
-type Tab = 'dashboard' | 'analytics' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'news' | 'assistant' | 'swap' | 'tokenStudio'
+type Tab = 'dashboard' | 'analytics' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'news' | 'assistant' | 'swap' | 'intelligence'
 
 const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'TRXUSDT']
 const currencyFormat = (value: number, lang: Lang) => new Intl.NumberFormat(lang === 'ar' ? 'en-US' : lang, {
@@ -356,7 +356,7 @@ export default function App() {
     { id: 'news', label: t.news, icon: Newspaper },
     { id: 'assistant', label: t.assistant, icon: Sparkles },
     { id: 'swap', label: 'InstaSwap Swap', icon: RefreshCw },
-    { id: 'tokenStudio', label: lang === 'ar' ? 'إنشاء العملات' : lang === 'fr' ? 'Token Studio' : 'Token Studio', icon: ShieldCheck },
+    { id: 'intelligence', label: lang === 'ar' ? 'مركز الذكاء والتحليل' : lang === 'fr' ? 'Crypto Intelligence' : 'Crypto Intelligence', icon: Sparkles }, 
   ]
 
   return <div className="app-shell" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -486,7 +486,7 @@ export default function App() {
         </section>
       </section>}
 
-      {tab === 'tokenStudio' && <section className="page-content"><div className="section-heading"><div><h2>{lang === 'ar' ? 'استوديو إنشاء العملات' : 'Base Token Studio'}</h2><p>{lang === 'ar' ? 'إنشاء عملات ERC-20 ثابتة الإصدار على Base.' : 'Build fixed-supply ERC-20 token specifications for Base.'}</p></div><span className="official-tag"><ShieldCheck size={15}/> Non-custodial</span></div><TokenStudio lang={lang}/></section>}
+      {tab === 'intelligence' && <section className="page-content"><div className="section-heading"><div><h2>{lang === 'ar' ? 'مركز ذكاء العملات الرقمية' : lang === 'fr' ? 'Crypto Intelligence Desk' : 'Crypto Intelligence Desk'}</h2><p>{lang === 'ar' ? 'بيانات سوق عامة وأدوات بحث وتعليم — دون محافظ أو معاملات.' : lang === 'fr' ? 'Données publiques, recherche et apprentissage — sans portefeuille ni transaction.' : 'Public market data, research and learning tools — no wallets or transactions.'}</p></div><span className="official-tag"><ShieldCheck size={15}/> Information only</span></div><CryptoIntelligence lang={lang} tickers={tickers} loading={loadingPrices} error={tickerError}/></section>}
 
       {tab === 'swap' && <section className="page-content">
         <div className="section-heading"><div><h2>InstaSwap Center</h2><p>Review a quote and fees, then create your swap order yourself.</p></div><span className="official-tag"><ShieldCheck size={15}/> Walletless API</span></div>
