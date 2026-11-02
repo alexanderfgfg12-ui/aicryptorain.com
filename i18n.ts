@@ -24,6 +24,7 @@ export const translations = {
     authDisabled: 'المصادقة غير مهيأة بعد. أضف إعدادات Firebase في إعدادات المستودع.',
     authError: 'تعذر إتمام المصادقة. تحقق من الإعدادات والنطاقات المسموحة.',
     close: 'إغلاق', saved: 'تم حفظ قائمة المتابعة على هذا الجهاز.',
+    authVerificationSent: 'مرحباً بك! أرسلنا رسالة تحقق إلى بريدك الإلكتروني. افتحها لتأكيد حسابك.', authVerificationFailed: 'تم إنشاء الحساب، لكن تعذر إرسال رسالة التحقق. استخدم زر إعادة الإرسال من قسم العضوية.',
   },
   fr: {
     brand: 'AI Crypto Rain', tagline: 'L’intelligence du marché, au même endroit',
@@ -48,6 +49,7 @@ export const translations = {
     authDisabled: 'Authentification non configurée. Ajoutez les paramètres Firebase dans le dépôt.',
     authError: 'Échec de l’authentification. Vérifiez les paramètres et les domaines autorisés.',
     close: 'Fermer', saved: 'Liste de suivi enregistrée sur cet appareil.',
+    authVerificationSent: 'Bienvenue ! Un e-mail de vérification a été envoyé. Ouvrez-le pour confirmer votre compte.', authVerificationFailed: 'Votre compte est créé, mais l’e-mail de vérification n’a pas pu être envoyé. Réessayez depuis la section Adhésion.',
   },
   en: {
     brand: 'AI Crypto Rain', tagline: 'Market intelligence, in one place',
@@ -72,5 +74,6 @@ export const translations = {
     authDisabled: 'Authentication is not configured. Add Firebase settings to repository variables.',
     authError: 'Authentication failed. Check settings and authorized domains.',
     close: 'Close', saved: 'Watchlist saved on this device.',
+    authVerificationSent: 'Welcome! We sent a verification email. Open it to confirm your account.', authVerificationFailed: 'Your account was created, but the verification email could not be sent. Retry from the Membership section.',
   },
 } as const
