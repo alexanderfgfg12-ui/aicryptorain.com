@@ -25,7 +25,7 @@ export default function TokenStudio({ lang }: { lang: 'ar' | 'fr' | 'en' }) {
   const [message, setMessage] = useState('')
   const [copied, setCopied] = useState(false)
   const [busy, setBusy] = useState(false)
-  const validSupply = /^(0|[1-9][0-9]*)(\\.[0-9]{1,18})?$/.test(supply) && Number(supply) > 0
+  const validSupply = /^(0|[1-9][0-9]*)(\.[0-9]{1,18})?$/.test(supply) && Number(supply) > 0
   const valid = name.trim().length > 0 && name.length <= 64 && /^[A-Z0-9]{2,12}$/.test(symbol.trim().toUpperCase()) && validSupply
   const source = useMemo(() => {
     const parts = supply.split('.')
@@ -51,7 +51,7 @@ export default function TokenStudio({ lang }: { lang: 'ar' | 'fr' | 'en' }) {
       '    }',
       '}',
       ''
-    ].join('\\n')
+    ].join('\n')
   }, [name, symbol, supply])
 
   async function connectWallet() {
