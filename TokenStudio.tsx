@@ -35,6 +35,7 @@ export default function TokenStudio({ lang }: { lang: 'ar' | 'fr' | 'en' }) {
   })()
   const valid = name.trim().length > 0 && name.length <= 64 && /^[A-Z0-9]{2,12}$/.test(symbol.trim().toUpperCase()) && validSupply
   const source = useMemo(() => {
+    if (!validSupply) return '// Enter a valid token supply to generate this contract.'
     const parts = supply.split('.')
     const whole = parts[0] || '0'
     const fraction = (parts[1] || '').padEnd(18, '0')
