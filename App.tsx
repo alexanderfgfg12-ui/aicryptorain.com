@@ -287,7 +287,7 @@ export default function App() {
         <div className="hero-panel">
           <div className="hero-copy"><div className="pill"><Sparkles size={14}/>{t.brand} <span>•</span> Web3 intelligence</div>
             <h2>{t.welcome}</h2><p>{t.subtitle}</p>
-            <div className="hero-buttons"><button className="button-primary" onClick={() => navigate('markets')}>{t.markets}<Activity size={17}/></button><button className="button-ghost" onClick={() => navigate('swap')}>InstaSwap <RefreshCw size={17}/></button></div>
+            <div className="hero-buttons"><button className="button-primary" onClick={() => navigate('markets')}>{t.markets}<Activity size={17}/></button><button className="button-ghost" onClick={() => navigate('intelligence')}>{lang === 'ar' ? 'مركز الذكاء' : lang === 'fr' ? 'Intelligence' : 'Intelligence'} <Sparkles size={17}/></button></div>
           </div>
           <div className="hero-art" aria-hidden="true"><div className="orb orb-one"/><div className="orb orb-two"/><div className="coin coin-btc">₿</div><div className="coin coin-eth">◆</div><div className="orbit orbit-one"/><div className="orbit orbit-two"/><div className="art-label"><Activity size={15}/> Market intelligence</div></div>
         </div>
