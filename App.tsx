@@ -287,7 +287,7 @@ export default function App() {
         <div className="hero-panel">
           <div className="hero-copy"><div className="pill"><Sparkles size={14}/>{t.brand} <span>•</span> Web3 intelligence</div>
             <h2>{t.welcome}</h2><p>{t.subtitle}</p>
-            <div className="hero-buttons"><button className="button-primary" onClick={() => navigate('markets')}>{t.markets}<Activity size={17}/></button><button className="button-ghost" onClick={() => navigate('intelligence')}>{lang === 'ar' ? 'مركز الذكاء' : lang === 'fr' ? 'Intelligence' : 'Intelligence'} <Sparkles size={17}/></button></div>
+            <div className="hero-buttons"><button className="button-primary" onClick={() => navigate('markets')}>{t.markets}<Activity size={17}/></button><button className="button-ghost" onClick={() => navigate('intelligence')}>{lang === 'ar' ? 'مركز الذكاء' : lang === 'fr' ? 'Intelligence' : 'Intelligence'} <Sparkles size={17}/></button><a className="button-ghost" href="https://instaswap.com/" target="_blank" rel="noopener noreferrer">InstaSwap <ArrowUpRight size={17}/></a></div>
           </div>
           <div className="hero-art" aria-hidden="true"><div className="orb orb-one"/><div className="orb orb-two"/><div className="coin coin-btc">₿</div><div className="coin coin-eth">◆</div><div className="orbit orbit-one"/><div className="orbit orbit-two"/><div className="art-label"><Activity size={15}/> Market intelligence</div></div>
         </div>
@@ -296,6 +296,7 @@ export default function App() {
           <button className="feature-tile" onClick={() => navigate('markets')}><span className="feature-icon"><Activity size={19}/></span><span><b>Live prices</b><small>Track assets and 24-hour movement</small></span><ArrowUpRight size={16}/></button>
           <button className="feature-tile" onClick={() => navigate('analytics')}><span className="feature-icon"><LayoutDashboard size={19}/></span><span><b>Technical analysis dashboard</b><small>Candlesticks, indicators, and market trends</small></span><ArrowUpRight size={16}/></button>
           <button className="feature-tile" onClick={() => navigate('scanner')}><span className="feature-icon"><Search size={19}/></span><span><b>Market scanner</b><small>Discover top gainers and losers</small></span><ArrowUpRight size={16}/></button>
+          <a className="feature-tile" href="https://instaswap.com/" target="_blank" rel="noopener noreferrer"><span className="feature-icon"><ArrowUpRight size={19}/></span><span><b>InstaSwap</b><small>Open the official InstaSwap website</small></span><ArrowUpRight size={16}/></a>
         </div>
 
         <div className="section-heading"><div><h2>{t.marketOverview}</h2><p>{t.liveData}</p></div><button className="text-button" onClick={() => navigate('markets')}>{t.markets} <span>↗</span></button></div>
