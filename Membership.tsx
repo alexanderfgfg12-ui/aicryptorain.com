@@ -2,10 +2,12 @@ import { BadgeCheck, CircleUserRound, LogIn, LogOut, ShieldCheck, Sparkles } fro
 
 type Props = {
   email?: string | null
+  emailVerified: boolean
   lang: 'ar' | 'fr' | 'en'
   firebaseReady: boolean
   onSignIn: () => void
   onSignOut: () => void
+  onResendVerification: () => void
 }
 
 const text = {
@@ -16,6 +18,7 @@ const text = {
     account: 'حسابك', signed: 'تم تسجيل الدخول', guest: 'تستخدم المنصة كزائر',
     signIn: 'تسجيل الدخول أو إنشاء حساب', signOut: 'تسجيل الخروج',
     authReady: 'تسجيل الحسابات متاح عند إعداد Firebase من إعدادات المشروع.',
+    verified: 'تم تأكيد البريد الإلكتروني', verifyEmail: 'لم يتم تأكيد البريد الإلكتروني بعد', resendVerification: 'إعادة إرسال رسالة التحقق',
     authMissing: 'تسجيل الدخول غير مفعّل بعد. يمكنك استخدام الأدوات المجانية دون حساب.',
     noPaid: 'لا توجد مدفوعات أو تجديد تلقائي أو اشتراكات مدفوعة مفعّلة.',
     privacy: 'لا تُرسل بيانات التنبيهات أو المفضلة إلى خادم؛ تُحفظ محلياً في متصفحك.',
@@ -27,6 +30,7 @@ const text = {
     account: 'Votre compte', signed: 'Connecté', guest: 'Vous utilisez la plateforme en invité',
     signIn: 'Se connecter ou créer un compte', signOut: 'Se déconnecter',
     authReady: 'Les comptes seront disponibles lorsque Firebase sera configuré.',
+    verified: 'Adresse e-mail vérifiée', verifyEmail: 'Adresse e-mail non vérifiée', resendVerification: 'Renvoyer l’e-mail de vérification',
     authMissing: 'La connexion n’est pas encore activée. Les outils gratuits restent accessibles sans compte.',
     noPaid: 'Aucun paiement, renouvellement automatique ou abonnement payant n’est activé.',
     privacy: 'Les alertes et favoris restent dans le stockage local de votre navigateur.',
@@ -38,13 +42,14 @@ const text = {
     account: 'Your account', signed: 'Signed in', guest: 'You are using the platform as a guest',
     signIn: 'Sign in or create an account', signOut: 'Sign out',
     authReady: 'Account registration is available once Firebase is configured for the project.',
+    verified: 'Email address verified', verifyEmail: 'Email address not verified yet', resendVerification: 'Resend verification email',
     authMissing: 'Sign-in is not enabled yet. You can use the free tools without an account.',
     noPaid: 'No payments, auto-renewals, or paid subscriptions are enabled.',
     privacy: 'Alerts and watchlist are stored locally in your browser, not sent to a server.',
   },
 }
 
-export default function Membership({ email, lang, firebaseReady, onSignIn, onSignOut }: Props) {
+export default function Membership({ email, emailVerified, lang, firebaseReady, onSignIn, onSignOut, onResendVerification }: Props) {
   const t = text[lang]
   return <section className="page-content">
     <div className="section-heading"><div><h2>{t.title}</h2><p>{t.subtitle}</p></div><span className="ai-badge"><CircleUserRound size={16}/></span></div>
@@ -62,6 +67,7 @@ export default function Membership({ email, lang, firebaseReady, onSignIn, onSig
         <p className="membership-kicker">{t.account}</p>
         <h3>{email || t.guest}</h3>
         <p className="membership-account-state">{email ? t.signed : t.guest}</p>
+        {email && <><p className="data-note">{emailVerified ? t.verified : t.verifyEmail}</p>{!emailVerified && <button className="button-ghost" type="button" onClick={onResendVerification}>{t.resendVerification}</button>}</>}
         {email
           ? <button className="button-ghost" type="button" onClick={onSignOut}><LogOut size={16}/>{t.signOut}</button>
           : <button className="button-primary" type="button" onClick={onSignIn} disabled={!firebaseReady}><LogIn size={16}/>{t.signIn}</button>}
