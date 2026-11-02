@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import {
   Activity, ArrowDownRight, ArrowUpRight, Bell, BookOpen, ChevronDown,
   CircleHelp, Globe2, LayoutDashboard, LogIn, LogOut, Menu, Newspaper,
-  RefreshCw, Search, ShieldCheck, Sparkles, Star, X, Send, CircleUserRound,
+  Search, ShieldCheck, Sparkles, Star, X, Send, CircleUserRound,
 } from 'lucide-react'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import {
@@ -16,126 +16,9 @@ import AlertCenter from './AlertCenter'
 import Membership from './Membership'
 import CryptoIntelligence from './CryptoIntelligence'
 
-// ==========================================
-// قسم InstaSwap (مدمج مباشرة لتجنب مشاكل الملفات)
-// ==========================================
-type SwapToken = { id: string; symbol?: string; name?: string; minAmount?: string | number }
-type SwapQuote = { estimatedOut?: string | number; estimatedOutUsd?: string | number; etaSeconds?: number; feeBreakdown?: { type?: string; asset?: string; amount?: string | number; amountUsd?: string | number }[] }
-type SwapOrder = { txid?: string; id?: string; depositAddress?: string; depositAmount?: string | number; depositAmountExact?: string | number; depositMemo?: string; depositInfo?: { depositAddress?: string; depositNetwork?: string; depositToken?: string; depositAmount?: string | number; depositAmountExact?: string | number; depositMemo?: string }[] }
-const INSTASWAP_API = 'https://walletlessapi.instaswap.com'
-
-async function instaswapRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(INSTASWAP_API + path, { ...options, headers: { Accept: 'application/json', ...(options.body ? { 'Content-Type': 'application/json' } : {}), ...options.headers } })
-  const raw = await response.text()
-  let data: any = {}
-  try { data = raw ? JSON.parse(raw) : {} } catch { data = { message: raw } }
-  if (!response.ok) throw new Error(data?.message || data?.error || data?.reason || `InstaSwap request failed (${response.status})`)
-  return data as T
-}
-
-function InstaSwapWidget() {
-  const affiliateId = (import.meta.env.VITE_INSTASWAP_AFFILIATE_ID || '').trim()
-  const [tokens, setTokens] = useState<SwapToken[]>([])
-  const [tokensLoading, setTokensLoading] = useState(true)
-  const [tokensError, setTokensError] = useState(false)
-  const [fromId, setFromId] = useState('btc.btc')
-  const [toId, setToId] = useState('eth.eth')
-  const [amount, setAmount] = useState('0.001')
-  const [recipient, setRecipient] = useState('')
-  const [refund, setRefund] = useState('')
-  const [privateRoute, setPrivateRoute] = useState(true)
-  const [phase, setPhase] = useState<'idle' | 'quoting' | 'quoted' | 'creating' | 'created' | 'error'>('idle')
-  const [quote, setQuote] = useState<SwapQuote | null>(null)
-  const [order, setOrder] = useState<SwapOrder | null>(null)
-  const [status, setStatus] = useState<any>(null)
-  const [error, setError] = useState('')
-  const reset = () => { setQuote(null); setOrder(null); setStatus(null); setError(''); setPhase('idle') }
-
-  useEffect(() => {
-    let active = true
-    instaswapRequest<any>('/tokens-lite').then(data => {
-      const rows = Array.isArray(data) ? data : Array.isArray(data?.tokens) ? data.tokens : Array.isArray(data?.data) ? data.data : []
-      const list = rows.filter((x: any) => typeof x?.id === 'string').map((x: any) => ({ id: x.id, symbol: x.symbol, name: x.name, minAmount: x.minAmount ?? x.minimum ?? x.min })).sort((a: SwapToken,b: SwapToken) => (a.symbol || a.id).localeCompare(b.symbol || b.id))
-      if (!active) return
-      setTokens(list); setTokensError(!list.length)
-      if (list.length && !list.some((x: SwapToken) => x.id === 'btc.btc')) setFromId(list[0].id)
-      if (list.length && !list.some((x: SwapToken) => x.id === 'eth.eth')) setToId(list[Math.min(1,list.length-1)].id)
-    }).catch(() => { if (active) setTokensError(true) }).finally(() => { if (active) setTokensLoading(false) })
-    return () => { active = false }
-  }, [])
-
-  const options = tokens.length ? tokens : [{ id: 'btc.btc', symbol: 'BTC', name: 'Bitcoin' }, { id: 'eth.eth', symbol: 'ETH', name: 'Ethereum' }]
-  const label = (x: SwapToken) => `${x.symbol || x.id.toUpperCase()} — ${x.name || x.id}`
-
-  async function getQuote() {
-    if (!affiliateId) { setError('An InstaSwap Partners affiliate ID is required to request quotes.'); setPhase('error'); return }
-    if (!Number.isFinite(Number(amount)) || Number(amount) <= 0 || fromId === toId) { setError('Enter a valid amount and choose two different assets.'); setPhase('error'); return }
-    setPhase('quoting'); setError(''); setQuote(null); setOrder(null); setStatus(null)
-    try {
-      const result = await instaswapRequest<SwapQuote>('/quote-lite', { method: 'POST', body: JSON.stringify({ affiliateId, from: fromId, to: toId, amount: amount.trim(), private: privateRoute }) })
-      if (result.estimatedOut == null) throw new Error('InstaSwap did not return an estimated output amount for this pair.')
-      setQuote(result); setPhase('quoted')
-    } catch (e) { setError(e instanceof Error ? e.message : 'Unable to retrieve a quote.'); setPhase('error') }
-  }
-
-  async function createSwap() {
-    if (!affiliateId || !quote || !recipient.trim() || !refund.trim()) return
-    setPhase('creating'); setError('')
-    try {
-      const result = await instaswapRequest<SwapOrder>('/swap-lite', { method: 'POST', body: JSON.stringify({ affiliateId, from: fromId, to: toId, amount: amount.trim(), recipientAddress: recipient.trim(), refundAddress: refund.trim(), private: privateRoute }) })
-      if (!result.txid && !result.id) throw new Error('InstaSwap did not return a valid order ID.')
-      setOrder(result); setPhase('created')
-    } catch (e) { setError(e instanceof Error ? e.message : 'Unable to create the swap order.'); setPhase('error') }
-  }
-
-  async function refreshStatus() {
-    const id = order?.txid || order?.id
-    if (!id) return
-    try { setStatus(await instaswapRequest<any>(`/swap/${encodeURIComponent(id)}/status-lite`)) }
-    catch (e) { setError(e instanceof Error ? e.message : 'Unable to refresh the order status.') }
-  }
-
-  const deposit = order?.depositInfo?.[0]
-  const depositAddress = deposit?.depositAddress || order?.depositAddress
-
-  return <section className="instaswap-layout">
-    <div className="panel instaswap-card">
-      <div className="instaswap-heading"><div><span className="pill gold-pill">INSTANT CROSS-CHAIN SWAP</span><h3>Swap assets across networks</h3><p>Request a live quote, review the details, and create the order yourself. Never send funds before verifying the deposit address and network.</p></div><span className="instaswap-mark"><RefreshCw size={23}/></span></div>
-      {!affiliateId && <div className="inline-warning"><CircleHelp size={17}/><span>Activation requires an affiliate ID: add <code>VITE_INSTASWAP_AFFILIATE_ID</code> to GitHub Actions settings after registering and adding your domain in the partner portal.</span></div>}
-      {tokensError && <div className="inline-warning"><CircleHelp size={17}/><span>Unable to load the asset list. Default assets are for testing only; do not create an order until you confirm the pair is supported.</span></div>}
-      <div className="swap-form-grid">
-        <label>Send from<select value={fromId} onChange={e => { setFromId(e.target.value); reset() }}>{options.map(x => <option key={x.id} value={x.id}>{label(x)}</option>)}</select></label>
-        <label>Receive to<select value={toId} onChange={e => { setToId(e.target.value); reset() }}>{options.map(x => <option key={x.id} value={x.id}>{label(x)}</option>)}</select></label>
-        <label className="swap-amount-field">Amount to send<input value={amount} onChange={e => { setAmount(e.target.value); reset() }} inputMode="decimal" placeholder="0.001"/></label>
-        <label className="swap-private-toggle"><input type="checkbox" checked={privateRoute} onChange={e => { setPrivateRoute(e.target.checked); reset() }}/> Prefer a private settlement route (subject to availability and fees)</label>
-      </div>
-      <button className="button-primary swap-quote-button" type="button" onClick={() => void getQuote()} disabled={!affiliateId || tokensLoading || phase === 'quoting' || phase === 'creating' || !amount.trim()}>{phase === 'quoting' ? 'Requesting quote…' : 'Get a quote'}</button>
-      {tokensLoading && <p className="data-note">Loading supported InstaSwap assets…</p>}
-      {error && <div className="swap-error" role="alert"><CircleHelp size={17}/>{error}</div>}
-      {quote && <div className="swap-quote-result">
-        <div className="swap-result-main"><span>Estimated amount to receive</span><strong>{quote.estimatedOut} <small>{toId.split('.')[1]?.toUpperCase()}</small></strong>{quote.estimatedOutUsd != null && <small>Approximate value: ${quote.estimatedOutUsd} USD</small>}</div>
-        <div className="swap-result-meta"><span>Estimated time</span><b>{quote.etaSeconds ? `About ${Math.ceil(quote.etaSeconds/60)} min` : 'Depends on network and liquidity'}</b></div>
-        {!!quote.feeBreakdown?.length && <div className="swap-fees"><b>InstaSwap fee breakdown</b>{quote.feeBreakdown.map((f,i) => <span key={i}>{f.type || 'Fee'} · {f.amount ?? '—'} {f.asset || ''}{f.amountUsd != null ? ` ($${f.amountUsd})` : ''}</span>)}</div>}
-        <div className="swap-address-grid"><label>Recipient address on destination network<input value={recipient} onChange={e => { setRecipient(e.target.value); setOrder(null); setStatus(null) }} placeholder="Enter destination wallet address"/></label><label>Refund address on source network<input value={refund} onChange={e => { setRefund(e.target.value); setOrder(null); setStatus(null) }} placeholder="Enter a valid refund address"/></label></div>
-        <p className="swap-safety-note">Verify the network and both addresses carefully. Sending assets to the wrong network or address may result in permanent loss.</p>
-        <button className="button-primary swap-quote-button" type="button" onClick={() => void createSwap()} disabled={!recipient.trim() || !refund.trim() || phase === 'creating'}>{phase === 'creating' ? 'Creating order…' : 'Confirm and create swap order'}</button>
-      </div>}
-      {order && <div className="swap-order-result" aria-live="polite"><span className="official-tag">Order created with InstaSwap</span><h3>Review deposit details before transferring</h3><p>Order ID: <code>{order.txid || order.id}</code></p>
-        {depositAddress && <div className="deposit-address"><small>Deposit address</small><code>{depositAddress}</code><button type="button" className="button-ghost" onClick={() => { if (navigator.clipboard?.writeText) void navigator.clipboard.writeText(depositAddress) }}>Copy address</button></div>}
-        {(deposit?.depositMemo || order.depositMemo) && <p><b>Memo / Tag:</b> <code>{deposit?.depositMemo || order.depositMemo}</code> — Include it if required.</p>}
-        <p>Send only <b>{deposit?.depositAmountExact || deposit?.depositAmount || order.depositAmountExact || order.depositAmount || amount}</b> of <b>{deposit?.depositNetwork || fromId.split('.')[0]}</b> / <b>{deposit?.depositToken || fromId.split('.')[1]}</b> to the address shown. Do not send from a different network.</p>
-        <button type="button" className="button-ghost" onClick={() => void refreshStatus()}><RefreshCw size={16}/> Refresh order status</button>
-        {status && <div className="swap-status-panel"><b>Order status: {status.state || status.status || status.orderStatus || 'Status update received'}</b><pre className="swap-status">{JSON.stringify(status, null, 2)}</pre></div>}
-      </div>}
-      <p className="data-note"><ShieldCheck size={15}/> Swaps are executed through InstaSwap and its protocols. Review the quote, fees, limits, and network risks before sending; never enter your private keys or recovery phrase on this website.</p>
-    </div>
-    <aside className="panel instaswap-aside"><h3>Before you send</h3><ul><li>Get a fresh quote before creating an order.</li><li>Verify the recipient and refund addresses.</li><li>Check the deposit network and any Memo / Tag shown.</li><li>Send only the exact amount specified in the order.</li><li>Track the order using its ID.</li></ul><a href="https://instaswap.com/docs" target="_blank" rel="noopener noreferrer">Official InstaSwap documentation ↗</a><a href="https://partners.instaswap.com" target="_blank" rel="noopener noreferrer">Partner portal ↗</a></aside>
-  </section>
-}
-
 type Ticker = { symbol: string; lastPrice: string; priceChangePercent: string; quoteVolume: string }
 type Article = { title: string; url: string; source: string; publishedAt?: string; description?: string; category?: string }
-type Tab = 'dashboard' | 'analytics' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'news' | 'assistant' | 'swap' | 'intelligence'
+type Tab = 'dashboard' | 'analytics' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'news' | 'assistant' | 'intelligence'
 
 const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'TRXUSDT']
 const currencyFormat = (value: number, lang: Lang) => new Intl.NumberFormat(lang === 'ar' ? 'en-US' : lang, {
@@ -355,7 +238,7 @@ export default function App() {
     { id: 'membership', label: lang === 'ar' ? 'العضوية المجانية' : lang === 'fr' ? 'Adhésion' : 'Membership', icon: CircleUserRound },
     { id: 'news', label: t.news, icon: Newspaper },
     { id: 'assistant', label: t.assistant, icon: Sparkles },
-    { id: 'swap', label: 'InstaSwap Swap', icon: RefreshCw },
+    
     { id: 'intelligence', label: lang === 'ar' ? 'مركز الذكاء والتحليل' : lang === 'fr' ? 'Crypto Intelligence' : 'Crypto Intelligence', icon: Sparkles }, 
   ]
 
@@ -488,10 +371,7 @@ export default function App() {
 
       {tab === 'intelligence' && <section className="page-content"><div className="section-heading"><div><h2>{lang === 'ar' ? 'مركز ذكاء العملات الرقمية' : lang === 'fr' ? 'Crypto Intelligence Desk' : 'Crypto Intelligence Desk'}</h2><p>{lang === 'ar' ? 'بيانات سوق عامة وأدوات بحث وتعليم — دون محافظ أو معاملات.' : lang === 'fr' ? 'Données publiques, recherche et apprentissage — sans portefeuille ni transaction.' : 'Public market data, research and learning tools — no wallets or transactions.'}</p></div><span className="official-tag"><ShieldCheck size={15}/> Information only</span></div><CryptoIntelligence lang={lang} tickers={tickers} loading={loadingPrices} error={tickerError}/></section>}
 
-      {tab === 'swap' && <section className="page-content">
-        <div className="section-heading"><div><h2>InstaSwap Center</h2><p>Review a quote and fees, then create your swap order yourself.</p></div><span className="official-tag"><ShieldCheck size={15}/> Walletless API</span></div>
-        <InstaSwapWidget />
-      </section>}
+      
 
       <footer className="site-footer"><span>☔ AI Crypto Rain</span><span>{t.footer}</span><div><BookOpen size={15}/> Educational use only</div></footer>
     </main>
