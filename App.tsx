@@ -122,13 +122,13 @@ function InstaSwapWidget() {
       {order && <div className="swap-order-result" aria-live="polite"><span className="official-tag">Order created with InstaSwap</span><h3>Review deposit details before transferring</h3><p>Order ID: <code>{order.txid || order.id}</code></p>
         {depositAddress && <div className="deposit-address"><small>Deposit address</small><code>{depositAddress}</code><button type="button" className="button-ghost" onClick={() => { if (navigator.clipboard?.writeText) void navigator.clipboard.writeText(depositAddress) }}>Copy address</button></div>}
         {(deposit?.depositMemo || order.depositMemo) && <p><b>Memo / Tag:</b> <code>{deposit?.depositMemo || order.depositMemo}</code> — Include it if required.</p>}
-        <p>Send only <b>{deposit?.depositAmountExact || deposit?.depositAmount || order.depositAmountExact || order.depositAmount || amount}</b> من <b>{deposit?.depositNetwork || fromId.split('.')[0]}</b> / <b>{deposit?.depositToken || fromId.split('.')[1]}</b> إلى العنوان المعروض. لا ترسل from a different network.</p>
+        <p>Send only <b>{deposit?.depositAmountExact || deposit?.depositAmount || order.depositAmountExact || order.depositAmount || amount}</b> of <b>{deposit?.depositNetwork || fromId.split('.')[0]}</b> / <b>{deposit?.depositToken || fromId.split('.')[1]}</b> to the address shown. Do not send from a different network.</p>
         <button type="button" className="button-ghost" onClick={() => void refreshStatus()}><RefreshCw size={16}/> Refresh order status</button>
         {status && <div className="swap-status-panel"><b>Order status: {status.state || status.status || status.orderStatus || 'Status update received'}</b><pre className="swap-status">{JSON.stringify(status, null, 2)}</pre></div>}
       </div>}
       <p className="data-note"><ShieldCheck size={15}/> Swaps are executed through InstaSwap and its protocols. Review the quote, fees, limits, and network risks before sending; never enter your private keys or recovery phrase on this website.</p>
     </div>
-    <aside className="panel instaswap-aside"><h3>Before you send</h3><ul><li>Get a quote جديد قبل إنشاء الطلب.</li><li>Verify the recipient and refund addresses.</li><li>Check the deposit network and any Memo / Tag shown.</li><li>Send only the exact amount specified in the order.</li><li>Track the order using its ID.</li></ul><a href="https://instaswap.com/docs" target="_blank" rel="noopener noreferrer">Official InstaSwap documentation ↗</a><a href="https://partners.instaswap.com" target="_blank" rel="noopener noreferrer">Partner portal ↗</a></aside>
+    <aside className="panel instaswap-aside"><h3>Before you send</h3><ul><li>Get a fresh quote before creating an order.</li><li>Verify the recipient and refund addresses.</li><li>Check the deposit network and any Memo / Tag shown.</li><li>Send only the exact amount specified in the order.</li><li>Track the order using its ID.</li></ul><a href="https://instaswap.com/docs" target="_blank" rel="noopener noreferrer">Official InstaSwap documentation ↗</a><a href="https://partners.instaswap.com" target="_blank" rel="noopener noreferrer">Partner portal ↗</a></aside>
   </section>
 }
 
@@ -377,7 +377,7 @@ export default function App() {
           <div className="home-swap-intro">
             <div className="pill gold-pill"><RefreshCw size={14}/> INSTANT CROSS-CHAIN SWAP</div>
             <h2>Swap crypto directly from the homepage</h2>
-            <p>اختر أصل الإرسال والاستلام، أدخل المبلغ، وGet a quote مباشر من InstaSwap — دون مغادرة AI Crypto Rain.</p>
+            <p>Choose the assets to send and receive, enter an amount, and get a live quote from InstaSwap — without leaving AI Crypto Rain.</p>
             <div className="home-swap-points"><span><ShieldCheck size={15}/> Quote before confirmation</span><span><Activity size={15}/> Track order status</span><span><Globe2 size={15}/> Cross-network swaps</span></div>
           </div>
           <div className="home-swap-widget"><InstaSwapWidget /></div>
