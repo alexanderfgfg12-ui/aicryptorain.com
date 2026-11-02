@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import {
   Activity, ArrowDownRight, ArrowUpRight, Bell, BookOpen, ChevronDown,
   CircleHelp, Globe2, LayoutDashboard, LogIn, LogOut, Menu, Newspaper,
-  Search, ShieldCheck, Sparkles, Star, X, Send, CircleUserRound,
+  RefreshCw, Search, ShieldCheck, Sparkles, Star, X, Send, CircleUserRound,
 } from 'lucide-react'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import {
