@@ -25,7 +25,14 @@ export default function TokenStudio({ lang }: { lang: 'ar' | 'fr' | 'en' }) {
   const [message, setMessage] = useState('')
   const [copied, setCopied] = useState(false)
   const [busy, setBusy] = useState(false)
-  const validSupply = /^(0|[1-9][0-9]*)(\.[0-9]{1,18})?$/.test(supply) && Number(supply) > 0
+  const validSupply = (() => {
+    if (!/^(0|[1-9][0-9]*)(\.[0-9]{1,18})?$/.test(supply)) return false
+    try {
+      const [whole, fraction = ''] = supply.split('.')
+      const units = BigInt(whole) * 10n ** 18n + BigInt(fraction.padEnd(18, '0') || '0')
+      return units > 0n && units <= (1n << 256n) - 1n
+    } catch { return false }
+  })()
   const valid = name.trim().length > 0 && name.length <= 64 && /^[A-Z0-9]{2,12}$/.test(symbol.trim().toUpperCase()) && validSupply
   const source = useMemo(() => {
     const parts = supply.split('.')
