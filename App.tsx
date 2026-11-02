@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import {
-  createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword,
+  createUserWithEmailAndPassword, onAuthStateChanged, sendEmailVerification, signInWithEmailAndPassword,
   signInWithPopup, signOut, type User,
 } from 'firebase/auth'
 import { auth, firebaseConfigured, googleProvider } from './firebase'
@@ -67,14 +67,14 @@ function InstaSwapWidget() {
   const label = (x: SwapToken) => `${x.symbol || x.id.toUpperCase()} — ${x.name || x.id}`
 
   async function getQuote() {
-    if (!affiliateId) { setError('يلزم معرّف الشريك من InstaSwap Partners لتفعيل طلبات الأسعار.'); setPhase('error'); return }
-    if (!Number.isFinite(Number(amount)) || Number(amount) <= 0 || fromId === toId) { setError('أدخل مبلغاً صحيحاً واختر أصلين مختلفين.'); setPhase('error'); return }
+    if (!affiliateId) { setError('An InstaSwap Partners affiliate ID is required to request quotes.'); setPhase('error'); return }
+    if (!Number.isFinite(Number(amount)) || Number(amount) <= 0 || fromId === toId) { setError('Enter a valid amount and choose two different assets.'); setPhase('error'); return }
     setPhase('quoting'); setError(''); setQuote(null); setOrder(null); setStatus(null)
     try {
       const result = await instaswapRequest<SwapQuote>('/quote-lite', { method: 'POST', body: JSON.stringify({ affiliateId, from: fromId, to: toId, amount: amount.trim(), private: privateRoute }) })
-      if (result.estimatedOut == null) throw new Error('لم يُرجع InstaSwap كمية استلام تقديرية لهذا الزوج.')
+      if (result.estimatedOut == null) throw new Error('InstaSwap did not return an estimated output amount for this pair.')
       setQuote(result); setPhase('quoted')
-    } catch (e) { setError(e instanceof Error ? e.message : 'تعذر الحصول على عرض السعر.'); setPhase('error') }
+    } catch (e) { setError(e instanceof Error ? e.message : 'Unable to retrieve a quote.'); setPhase('error') }
   }
 
   async function createSwap() {
@@ -82,16 +82,16 @@ function InstaSwapWidget() {
     setPhase('creating'); setError('')
     try {
       const result = await instaswapRequest<SwapOrder>('/swap-lite', { method: 'POST', body: JSON.stringify({ affiliateId, from: fromId, to: toId, amount: amount.trim(), recipientAddress: recipient.trim(), refundAddress: refund.trim(), private: privateRoute }) })
-      if (!result.txid && !result.id) throw new Error('لم يُرجع InstaSwap رقم طلب صالحاً.')
+      if (!result.txid && !result.id) throw new Error('InstaSwap did not return a valid order ID.')
       setOrder(result); setPhase('created')
-    } catch (e) { setError(e instanceof Error ? e.message : 'تعذر إنشاء طلب التبديل.'); setPhase('error') }
+    } catch (e) { setError(e instanceof Error ? e.message : 'Unable to create the swap order.'); setPhase('error') }
   }
 
   async function refreshStatus() {
     const id = order?.txid || order?.id
     if (!id) return
     try { setStatus(await instaswapRequest<any>(`/swap/${encodeURIComponent(id)}/status-lite`)) }
-    catch (e) { setError(e instanceof Error ? e.message : 'تعذر تحديث حالة الطلب.') }
+    catch (e) { setError(e instanceof Error ? e.message : 'Unable to refresh the order status.') }
   }
 
   const deposit = order?.depositInfo?.[0]
@@ -99,41 +99,41 @@ function InstaSwapWidget() {
 
   return <section className="instaswap-layout">
     <div className="panel instaswap-card">
-      <div className="instaswap-heading"><div><span className="pill gold-pill">INSTANT CROSS-CHAIN SWAP</span><h3>حوّل أصولك عبر الشبكات</h3><p>اطلب عرض سعر مباشر، راجع التفاصيل، ثم أنشئ الطلب بنفسك. لا ترسل أموالاً قبل التحقق من عنوان الإيداع والشبكة.</p></div><span className="instaswap-mark"><RefreshCw size={23}/></span></div>
-      {!affiliateId && <div className="inline-warning"><CircleHelp size={17}/><span>التفعيل بانتظار معرّف الشريك: أضف <code>VITE_INSTASWAP_AFFILIATE_ID</code> إلى إعدادات GitHub Actions بعد التسجيل وإضافة النطاق في بوابة الشركاء.</span></div>}
-      {tokensError && <div className="inline-warning"><CircleHelp size={17}/><span>تعذر تحميل قائمة الأصول الآن. الأصول الافتراضية للتجربة فقط؛ لا تنشئ طلباً قبل التأكد من دعم الزوج.</span></div>}
+      <div className="instaswap-heading"><div><span className="pill gold-pill">INSTANT CROSS-CHAIN SWAP</span><h3>Swap assets across networks</h3><p>Request a live quote, review the details, and create the order yourself. Never send funds before verifying the deposit address and network.</p></div><span className="instaswap-mark"><RefreshCw size={23}/></span></div>
+      {!affiliateId && <div className="inline-warning"><CircleHelp size={17}/><span>Activation requires an affiliate ID: add <code>VITE_INSTASWAP_AFFILIATE_ID</code> to GitHub Actions settings after registering and adding your domain in the partner portal.</span></div>}
+      {tokensError && <div className="inline-warning"><CircleHelp size={17}/><span>Unable to load the asset list. Default assets are for testing only; do not create an order until you confirm the pair is supported.</span></div>}
       <div className="swap-form-grid">
-        <label>أرسل من<select value={fromId} onChange={e => { setFromId(e.target.value); reset() }}>{options.map(x => <option key={x.id} value={x.id}>{label(x)}</option>)}</select></label>
-        <label>استلم إلى<select value={toId} onChange={e => { setToId(e.target.value); reset() }}>{options.map(x => <option key={x.id} value={x.id}>{label(x)}</option>)}</select></label>
-        <label className="swap-amount-field">المبلغ المراد إرساله<input value={amount} onChange={e => { setAmount(e.target.value); reset() }} inputMode="decimal" placeholder="0.001"/></label>
-        <label className="swap-private-toggle"><input type="checkbox" checked={privateRoute} onChange={e => { setPrivateRoute(e.target.checked); reset() }}/> تفضيل مسار تسوية خاص (حسب التوفر والرسوم)</label>
+        <label>Send from<select value={fromId} onChange={e => { setFromId(e.target.value); reset() }}>{options.map(x => <option key={x.id} value={x.id}>{label(x)}</option>)}</select></label>
+        <label>Receive to<select value={toId} onChange={e => { setToId(e.target.value); reset() }}>{options.map(x => <option key={x.id} value={x.id}>{label(x)}</option>)}</select></label>
+        <label className="swap-amount-field">Amount to send<input value={amount} onChange={e => { setAmount(e.target.value); reset() }} inputMode="decimal" placeholder="0.001"/></label>
+        <label className="swap-private-toggle"><input type="checkbox" checked={privateRoute} onChange={e => { setPrivateRoute(e.target.checked); reset() }}/> Prefer a private settlement route (subject to availability and fees)</label>
       </div>
-      <button className="button-primary swap-quote-button" type="button" onClick={() => void getQuote()} disabled={!affiliateId || tokensLoading || phase === 'quoting' || phase === 'creating' || !amount.trim()}>{phase === 'quoting' ? 'جارٍ طلب السعر…' : 'احصل على عرض سعر'}</button>
-      {tokensLoading && <p className="data-note">جارٍ تحميل الأصول المدعومة من InstaSwap…</p>}
+      <button className="button-primary swap-quote-button" type="button" onClick={() => void getQuote()} disabled={!affiliateId || tokensLoading || phase === 'quoting' || phase === 'creating' || !amount.trim()}>{phase === 'quoting' ? 'Requesting quote…' : 'Get a quote'}</button>
+      {tokensLoading && <p className="data-note">Loading supported InstaSwap assets…</p>}
       {error && <div className="swap-error" role="alert"><CircleHelp size={17}/>{error}</div>}
       {quote && <div className="swap-quote-result">
-        <div className="swap-result-main"><span>الكمية التقديرية للاستلام</span><strong>{quote.estimatedOut} <small>{toId.split('.')[1]?.toUpperCase()}</small></strong>{quote.estimatedOutUsd != null && <small>قيمة تقريبية: ${quote.estimatedOutUsd} USD</small>}</div>
-        <div className="swap-result-meta"><span>الوقت التقديري</span><b>{quote.etaSeconds ? `نحو ${Math.ceil(quote.etaSeconds/60)} دقيقة` : 'يعتمد على الشبكة والسيولة'}</b></div>
-        {!!quote.feeBreakdown?.length && <div className="swap-fees"><b>تفصيل الرسوم من InstaSwap</b>{quote.feeBreakdown.map((f,i) => <span key={i}>{f.type || 'رسوم'} · {f.amount ?? '—'} {f.asset || ''}{f.amountUsd != null ? ` ($${f.amountUsd})` : ''}</span>)}</div>}
-        <div className="swap-address-grid"><label>عنوان الاستلام على الشبكة المستهدفة<input value={recipient} onChange={e => { setRecipient(e.target.value); setOrder(null); setStatus(null) }} placeholder="أدخل عنوان محفظة الاستلام"/></label><label>عنوان الاسترداد على شبكة الإرسال<input value={refund} onChange={e => { setRefund(e.target.value); setOrder(null); setStatus(null) }} placeholder="أدخل عنوان استرداد صالحاً"/></label></div>
-        <p className="swap-safety-note">تحقق من الشبكة والعنوانين بنفسك. إرسال أصل إلى شبكة أو عنوان غير صحيح قد يؤدي إلى فقدانه نهائياً.</p>
-        <button className="button-primary swap-quote-button" type="button" onClick={() => void createSwap()} disabled={!recipient.trim() || !refund.trim() || phase === 'creating'}>{phase === 'creating' ? 'جارٍ إنشاء الطلب…' : 'تأكيد إنشاء طلب التبديل'}</button>
+        <div className="swap-result-main"><span>Estimated amount to receive</span><strong>{quote.estimatedOut} <small>{toId.split('.')[1]?.toUpperCase()}</small></strong>{quote.estimatedOutUsd != null && <small>Approximate value: ${quote.estimatedOutUsd} USD</small>}</div>
+        <div className="swap-result-meta"><span>Estimated time</span><b>{quote.etaSeconds ? `About ${Math.ceil(quote.etaSeconds/60)} min` : 'Depends on network and liquidity'}</b></div>
+        {!!quote.feeBreakdown?.length && <div className="swap-fees"><b>InstaSwap fee breakdown</b>{quote.feeBreakdown.map((f,i) => <span key={i}>{f.type || 'Fee'} · {f.amount ?? '—'} {f.asset || ''}{f.amountUsd != null ? ` ($${f.amountUsd})` : ''}</span>)}</div>}
+        <div className="swap-address-grid"><label>Recipient address on destination network<input value={recipient} onChange={e => { setRecipient(e.target.value); setOrder(null); setStatus(null) }} placeholder="Enter destination wallet address"/></label><label>Refund address on source network<input value={refund} onChange={e => { setRefund(e.target.value); setOrder(null); setStatus(null) }} placeholder="Enter a valid refund address"/></label></div>
+        <p className="swap-safety-note">Verify the network and both addresses carefully. Sending assets to the wrong network or address may result in permanent loss.</p>
+        <button className="button-primary swap-quote-button" type="button" onClick={() => void createSwap()} disabled={!recipient.trim() || !refund.trim() || phase === 'creating'}>{phase === 'creating' ? 'Creating order…' : 'Confirm and create swap order'}</button>
       </div>}
-      {order && <div className="swap-order-result" aria-live="polite"><span className="official-tag">تم إنشاء الطلب لدى InstaSwap</span><h3>راجع تفاصيل الإيداع قبل التحويل</h3><p>رقم الطلب: <code>{order.txid || order.id}</code></p>
-        {depositAddress && <div className="deposit-address"><small>عنوان الإيداع</small><code>{depositAddress}</code><button type="button" className="button-ghost" onClick={() => { if (navigator.clipboard?.writeText) void navigator.clipboard.writeText(depositAddress) }}>نسخ العنوان</button></div>}
-        {(deposit?.depositMemo || order.depositMemo) && <p><b>Memo / Tag:</b> <code>{deposit?.depositMemo || order.depositMemo}</code> — أدرجه إذا كان مطلوباً.</p>}
-        <p>أرسل فقط <b>{deposit?.depositAmountExact || deposit?.depositAmount || order.depositAmountExact || order.depositAmount || amount}</b> من <b>{deposit?.depositNetwork || fromId.split('.')[0]}</b> / <b>{deposit?.depositToken || fromId.split('.')[1]}</b> إلى العنوان المعروض. لا ترسل من شبكة مختلفة.</p>
-        <button type="button" className="button-ghost" onClick={() => void refreshStatus()}><RefreshCw size={16}/> تحديث حالة الطلب</button>
-        {status && <div className="swap-status-panel"><b>حالة الطلب: {status.state || status.status || status.orderStatus || 'تم استلام تحديث الحالة'}</b><pre className="swap-status">{JSON.stringify(status, null, 2)}</pre></div>}
+      {order && <div className="swap-order-result" aria-live="polite"><span className="official-tag">Order created with InstaSwap</span><h3>Review deposit details before transferring</h3><p>Order ID: <code>{order.txid || order.id}</code></p>
+        {depositAddress && <div className="deposit-address"><small>Deposit address</small><code>{depositAddress}</code><button type="button" className="button-ghost" onClick={() => { if (navigator.clipboard?.writeText) void navigator.clipboard.writeText(depositAddress) }}>Copy address</button></div>}
+        {(deposit?.depositMemo || order.depositMemo) && <p><b>Memo / Tag:</b> <code>{deposit?.depositMemo || order.depositMemo}</code> — Include it if required.</p>}
+        <p>Send only <b>{deposit?.depositAmountExact || deposit?.depositAmount || order.depositAmountExact || order.depositAmount || amount}</b> of <b>{deposit?.depositNetwork || fromId.split('.')[0]}</b> / <b>{deposit?.depositToken || fromId.split('.')[1]}</b> to the address shown. Do not send from a different network.</p>
+        <button type="button" className="button-ghost" onClick={() => void refreshStatus()}><RefreshCw size={16}/> Refresh order status</button>
+        {status && <div className="swap-status-panel"><b>Order status: {status.state || status.status || status.orderStatus || 'Status update received'}</b><pre className="swap-status">{JSON.stringify(status, null, 2)}</pre></div>}
       </div>}
-      <p className="data-note"><ShieldCheck size={15}/> المبادلة تُنفّذ عبر InstaSwap وبروتوكولاتها. راجع السعر والرسوم والحدود ومخاطر الشبكات قبل الإرسال؛ لا تضع مفاتيحك الخاصة أو عبارة الاسترداد في الموقع.</p>
+      <p className="data-note"><ShieldCheck size={15}/> Swaps are executed through InstaSwap and its protocols. Review the quote, fees, limits, and network risks before sending; never enter your private keys or recovery phrase on this website.</p>
     </div>
-    <aside className="panel instaswap-aside"><h3>قائمة التحقق قبل الإرسال</h3><ul><li>احصل على عرض سعر جديد قبل إنشاء الطلب.</li><li>تأكد من عنوان الاستلام وعنوان الاسترداد.</li><li>راجع شبكة الإيداع وMemo / Tag إن ظهر.</li><li>لا ترسل إلا المبلغ المحدد في الطلب.</li><li>تابع الحالة باستخدام رقم الطلب.</li></ul><a href="https://instaswap.com/docs" target="_blank" rel="noopener noreferrer">وثائق InstaSwap الرسمية ↗</a><a href="https://partners.instaswap.com" target="_blank" rel="noopener noreferrer">بوابة الشركاء ↗</a></aside>
+    <aside className="panel instaswap-aside"><h3>Before you send</h3><ul><li>Get a fresh quote before creating an order.</li><li>Verify the recipient and refund addresses.</li><li>Check the deposit network and any Memo / Tag shown.</li><li>Send only the exact amount specified in the order.</li><li>Track the order using its ID.</li></ul><a href="https://instaswap.com/docs" target="_blank" rel="noopener noreferrer">Official InstaSwap documentation ↗</a><a href="https://partners.instaswap.com" target="_blank" rel="noopener noreferrer">Partner portal ↗</a></aside>
   </section>
 }
 
 type Ticker = { symbol: string; lastPrice: string; priceChangePercent: string; quoteVolume: string }
-type Article = { title: string; url: string; source: string; publishedAt?: string }
+type Article = { title: string; url: string; source: string; publishedAt?: string; description?: string; category?: string }
 type Tab = 'dashboard' | 'analytics' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'news' | 'assistant' | 'swap'
 
 const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'TRXUSDT']
@@ -143,7 +143,12 @@ const currencyFormat = (value: number, lang: Lang) => new Intl.NumberFormat(lang
 const prettySymbol = (symbol: string) => symbol.replace('USDT', '')
 
 export default function App() {
-  const [lang, setLang] = useState<Lang>('ar')
+  const [lang, setLang] = useState<Lang>(() => {
+    try {
+      const saved = localStorage.getItem('acr-language')
+      return saved === 'ar' || saved === 'fr' || saved === 'en' ? saved : 'en'
+    } catch { return 'en' }
+  })
   const [tab, setTab] = useState<Tab>('dashboard')
   const [mobileNav, setMobileNav] = useState(false)
   const [tickers, setTickers] = useState<Ticker[]>([])
@@ -173,6 +178,7 @@ export default function App() {
   const aiApiUrl = import.meta.env.VITE_AI_API_URL
 
   useEffect(() => {
+    try { localStorage.setItem('acr-language', lang) } catch { /* Storage may be unavailable. */ }
     document.documentElement.lang = lang
     document.documentElement.dir = isRtl ? 'rtl' : 'ltr'
   }, [lang, isRtl])
@@ -206,32 +212,54 @@ export default function App() {
     setNewsLoading(true)
     setNewsError(false)
     try {
-      const res = await fetch('https://cryptocurrency.cv/api/news?limit=8')
-      if (!res.ok) throw new Error('News API unavailable')
-      const json: unknown = await res.json()
-      const rows = Array.isArray(json) ? json : (
-        json && typeof json === 'object' && 'data' in json && Array.isArray((json as {data: unknown}).data)
-          ? (json as {data: unknown[]}).data
-          : json && typeof json === 'object' && 'articles' in json && Array.isArray((json as {articles: unknown}).articles)
-            ? (json as {articles: unknown[]}).articles : []
-      )
-      const safe = (rows as Record<string, unknown>[]).map((row): Article | null => {
+      let rows: Record<string, unknown>[] = []
+      let imported = false
+      try {
+        const res = await fetch('https://raw.githubusercontent.com/alexanderfgfg12-ui/usamarket.live/main/news-data.json', { cache: 'no-store' })
+        if (!res.ok) throw new Error('US Market Live feed unavailable')
+        const json = await res.json() as { articles?: unknown[] }
+        rows = Array.isArray(json.articles) ? json.articles as Record<string, unknown>[] : []
+        imported = rows.length > 0
+      } catch {
+        // Keep the previous crypto-news provider as a fallback if the US Market Live feed is temporarily unavailable.
+        const fallback = await fetch('https://cryptocurrency.cv/api/news?limit=12', { cache: 'no-store' })
+        if (!fallback.ok) throw new Error('News providers unavailable')
+        const json: unknown = await fallback.json()
+        const items = Array.isArray(json) ? json : (
+          json && typeof json === 'object' && 'data' in json && Array.isArray((json as {data: unknown}).data)
+            ? (json as {data: unknown[]}).data
+            : json && typeof json === 'object' && 'articles' in json && Array.isArray((json as {articles: unknown}).articles)
+              ? (json as {articles: unknown[]}).articles : []
+        )
+        rows = items as Record<string, unknown>[]
+      }
+
+      const safe = rows.map((row): Article | null => {
         const title = typeof row.title === 'string' ? row.title : typeof row.headline === 'string' ? row.headline : ''
+        const id = typeof row.id === 'string' && /^[a-z0-9-]+$/i.test(row.id) ? row.id : ''
         const rawUrl = typeof row.url === 'string' ? row.url : typeof row.link === 'string' ? row.link : ''
         let url = ''
-        try {
-          const parsed = new URL(rawUrl)
-          if (parsed.protocol === 'https:' && !parsed.username && !parsed.password) url = parsed.href
-        } catch { /* Ignore malformed URLs. */ }
+        if (imported && id) {
+          url = `https://usamarket.live/news/${id}.html`
+        } else {
+          try {
+            const parsed = new URL(rawUrl)
+            if (parsed.protocol === 'https:' && !parsed.username && !parsed.password) url = parsed.href
+          } catch { /* Ignore malformed URLs. */ }
+        }
         if (!title || !url) return null
         return {
           title: title.slice(0, 240),
           url,
-          source: (typeof row.source === 'string' ? row.source : typeof row.author === 'string' ? row.author : 'News').slice(0, 80),
-          publishedAt: typeof row.published_at === 'string' ? row.published_at : typeof row.date === 'string' ? row.date : undefined,
+          source: (typeof row.source === 'string' ? row.source : typeof row.author === 'string' ? row.author : imported ? 'US Market Live' : 'News').slice(0, 80),
+          publishedAt: typeof row.pubDate === 'string' ? row.pubDate : typeof row.published_at === 'string' ? row.published_at : typeof row.date === 'string' ? row.date : undefined,
+          description: typeof row.description === 'string' ? row.description.replace(/<[^>]*>/g, '').slice(0, 220) : undefined,
+          category: typeof row.category === 'string' ? row.category.slice(0, 40) : undefined,
         }
-      }).filter((x): x is Article => x !== null).slice(0, 8)
-      setArticles(safe)
+      }).filter((x): x is Article => x !== null)
+      const unique = Array.from(new Map(safe.map(article => [article.url, article])).values())
+      unique.sort((a, b) => new Date(b.publishedAt || 0).getTime() - new Date(a.publishedAt || 0).getTime())
+      setArticles(unique)
     } catch {
       setNewsError(true)
       setArticles([])
@@ -261,12 +289,23 @@ export default function App() {
     setAuthBusy(true); setAuthMessage('')
     try {
       if (authMode === 'signup') {
-        await createUserWithEmailAndPassword(auth, email.trim(), password)
+        const credential = await createUserWithEmailAndPassword(auth, email.trim(), password)
+        auth.languageCode = lang
+        try {
+          await sendEmailVerification(credential.user, {
+            url: window.location.origin,
+            handleCodeInApp: false,
+          })
+          setAuthMessage(t.authVerificationSent)
+        } catch {
+          setAuthMessage(t.authVerificationFailed)
+        }
         setTab('membership')
       } else {
         await signInWithEmailAndPassword(auth, email.trim(), password)
+        setAuthMessage('')
       }
-      setAuthOpen(false); setPassword(''); setAuthMessage('')
+      setAuthOpen(false); setPassword('')
     } catch {
       setAuthMessage(t.authError)
     } finally { setAuthBusy(false) }
@@ -310,12 +349,12 @@ export default function App() {
     { id: 'dashboard', label: t.dashboard, icon: LayoutDashboard },
     { id: 'analytics', label: lang === 'ar' ? 'التحليل الفني' : lang === 'fr' ? 'Analyse technique' : 'Technical analysis', icon: Activity },
     { id: 'markets', label: t.markets, icon: Activity },
-    { id: 'scanner', label: lang === 'ar' ? 'ماسح السوق' : lang === 'fr' ? 'Scanner' : 'Scanner', icon: Search },
+    { id: 'scanner', label: lang === 'ar' ? 'Market scanner' : lang === 'fr' ? 'Scanner' : 'Scanner', icon: Search },
     { id: 'alerts', label: lang === 'ar' ? 'تنبيهات الأسعار' : lang === 'fr' ? 'Alertes' : 'Price alerts', icon: Bell },
     { id: 'membership', label: lang === 'ar' ? 'العضوية المجانية' : lang === 'fr' ? 'Adhésion' : 'Membership', icon: CircleUserRound },
     { id: 'news', label: t.news, icon: Newspaper },
     { id: 'assistant', label: t.assistant, icon: Sparkles },
-    { id: 'swap', label: 'تبديل InstaSwap', icon: RefreshCw },
+    { id: 'swap', label: 'InstaSwap Swap', icon: RefreshCw },
   ]
 
   return <div className="app-shell" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -357,6 +396,7 @@ export default function App() {
           </button>
         </div>
       </header>
+      {authMessage && !authOpen && <div className="auth-notice" role="status">{authMessage}</div>}
 
       {tab === 'dashboard' && <section className="page-content">
         <div className="hero-panel">
@@ -370,18 +410,18 @@ export default function App() {
         <section className="home-swap-showcase">
           <div className="home-swap-intro">
             <div className="pill gold-pill"><RefreshCw size={14}/> INSTANT CROSS-CHAIN SWAP</div>
-            <h2>بدّل العملات الرقمية مباشرة من الصفحة الرئيسية</h2>
-            <p>اختر أصل الإرسال والاستلام، أدخل المبلغ، واحصل على عرض سعر مباشر من InstaSwap — دون مغادرة AI Crypto Rain.</p>
-            <div className="home-swap-points"><span><ShieldCheck size={15}/> عرض سعر قبل التأكيد</span><span><Activity size={15}/> متابعة حالة الطلب</span><span><Globe2 size={15}/> تبديل عبر الشبكات</span></div>
+            <h2>Swap crypto directly from the homepage</h2>
+            <p>Choose the assets to send and receive, enter an amount, and get a live quote from InstaSwap — without leaving AI Crypto Rain.</p>
+            <div className="home-swap-points"><span><ShieldCheck size={15}/> Quote before confirmation</span><span><Activity size={15}/> Track order status</span><span><Globe2 size={15}/> Cross-network swaps</span></div>
           </div>
           <div className="home-swap-widget"><InstaSwapWidget /></div>
         </section>
 
         <div className="feature-strip" aria-label="Platform tools">
-          <button className="feature-tile" onClick={() => navigate('markets')}><span className="feature-icon"><Activity size={19}/></span><span><b>أسعار مباشرة</b><small>متابعة الأصول وحركة 24 ساعة</small></span><ArrowUpRight size={16}/></button>
-          <button className="feature-tile" onClick={() => navigate('analytics')}><span className="feature-icon"><LayoutDashboard size={19}/></span><span><b>لوحة التحليل الفني</b><small>شموع ومؤشرات واتجاهات السوق</small></span><ArrowUpRight size={16}/></button>
-          <button className="feature-tile" onClick={() => navigate('scanner')}><span className="feature-icon"><Search size={19}/></span><span><b>ماسح السوق</b><small>اكتشف الارتفاعات والانخفاضات</small></span><ArrowUpRight size={16}/></button>
-          <button className="feature-tile" onClick={() => navigate('swap')}><span className="feature-icon"><RefreshCw size={19}/></span><span><b>تبديل InstaSwap</b><small>عرض سعر وتتبع المبادلة</small></span><ArrowUpRight size={16}/></button>
+          <button className="feature-tile" onClick={() => navigate('markets')}><span className="feature-icon"><Activity size={19}/></span><span><b>Live prices</b><small>Track assets and 24-hour movement</small></span><ArrowUpRight size={16}/></button>
+          <button className="feature-tile" onClick={() => navigate('analytics')}><span className="feature-icon"><LayoutDashboard size={19}/></span><span><b>Technical analysis dashboard</b><small>Candlesticks, indicators, and market trends</small></span><ArrowUpRight size={16}/></button>
+          <button className="feature-tile" onClick={() => navigate('scanner')}><span className="feature-icon"><Search size={19}/></span><span><b>Market scanner</b><small>Discover top gainers and losers</small></span><ArrowUpRight size={16}/></button>
+          <button className="feature-tile" onClick={() => navigate('swap')}><span className="feature-icon"><RefreshCw size={19}/></span><span><b>InstaSwap swap</b><small>Get quotes and track swaps</small></span><ArrowUpRight size={16}/></button>
         </div>
 
         <div className="section-heading"><div><h2>{t.marketOverview}</h2><p>{t.liveData}</p></div><button className="text-button" onClick={() => navigate('markets')}>{t.markets} <span>↗</span></button></div>
@@ -400,11 +440,11 @@ export default function App() {
         </div>
 
         <div className="two-column">
-          <section className="panel"><div className="panel-heading"><div><h3>{t.newsTitle}</h3><p>Curated headlines</p></div><button className="icon-button" aria-label={t.refresh} onClick={() => void loadNews()}><RefreshCw size={17}/></button></div>
+          <section className="panel"><div className="panel-heading"><div><h3>{t.newsTitle}</h3><p>{t.newsSource}</p></div><button className="icon-button" aria-label={t.refresh} onClick={() => void loadNews()}><RefreshCw size={17}/></button></div>
             <NewsList articles={articles.slice(0, 4)} loading={newsLoading} error={newsError} t={t}/><button className="button-wide" onClick={() => navigate('news')}>{t.news} <span>↗</span></button>
           </section>
           <div className="partner-stack">
-            <section className="affiliate-panel partner-card binance-partner"><div className="affiliate-glow"/><div className="affiliate-icon"><Activity size={23}/></div><div className="pill gold-pill">BINANCE AFFILIATE</div><h3>{t.affiliateTitle}</h3><p>{t.affiliateBody}</p><a className="button-primary affiliate-link" href={referralUrl} target="_blank" rel="noopener noreferrer sponsored">{t.register}<ArrowUpRight size={17}/></a><small className="disclosure">رابط شراكة • تطبق شروط Binance</small></section>
+            <section className="affiliate-panel partner-card binance-partner"><div className="affiliate-glow"/><div className="affiliate-icon"><Activity size={23}/></div><div className="pill gold-pill">BINANCE AFFILIATE</div><h3>{t.affiliateTitle}</h3><p>{t.affiliateBody}</p><a className="button-primary affiliate-link" href={referralUrl} target="_blank" rel="noopener noreferrer sponsored">{t.register}<ArrowUpRight size={17}/></a><small className="disclosure">Affiliate link • Binance terms apply</small></section>
 
           </div>
         </div>
@@ -432,9 +472,9 @@ export default function App() {
 
       {tab === 'alerts' && <AlertCenter tickers={tickers} lang={lang}/>}
 
-      {tab === 'membership' && <Membership email={user?.email} lang={lang} firebaseReady={firebaseConfigured} onSignIn={() => { setAuthOpen(true); setAuthMessage('') }} onSignOut={() => { if (auth) void signOut(auth) }}/ >}
+      {tab === 'membership' && <Membership email={user?.email} emailVerified={user?.emailVerified ?? false} lang={lang} firebaseReady={firebaseConfigured} onSignIn={() => { setAuthOpen(true); setAuthMessage('') }} onResendVerification={() => { if (auth?.currentUser) { auth.languageCode = lang; void sendEmailVerification(auth.currentUser, { url: window.location.origin, handleCodeInApp: false }).then(() => setAuthMessage(t.authVerificationSent)).catch(() => setAuthMessage(t.authVerificationFailed)) } }} onSignOut={() => { if (auth) void signOut(auth) }}/ >}
 
-      {tab === 'news' && <section className="page-content"><div className="section-heading"><div><h2>{t.newsTitle}</h2><p>{t.source}: cryptocurrency.cv</p></div><button className="button-ghost" onClick={() => void loadNews()}><RefreshCw size={16}/>{t.refresh}</button></div><section className="panel news-panel"><NewsList articles={articles} loading={newsLoading} error={newsError} t={t}/></section></section>}
+      {tab === 'news' && <section className="page-content"><div className="section-heading"><div><h2>{t.newsTitle}</h2><p>{t.newsSource}</p></div><button className="button-ghost" onClick={() => void loadNews()}><RefreshCw size={16}/>{t.refresh}</button></div><section className="panel news-panel"><NewsList articles={articles} loading={newsLoading} error={newsError} t={t}/></section></section>}
 
       {tab === 'assistant' && <section className="page-content"><div className="section-heading"><div><h2>{t.aiTitle}</h2><p>{t.aiDisclaimer}</p></div><span className="ai-badge"><Sparkles size={16}/> AI</span></div>
         <section className="panel assistant-panel"><div className="assistant-intro"><div className="assistant-avatar"><Sparkles size={25}/></div><div><h3>{t.aiTitle}</h3><p>{t.aiIntro}</p></div></div>
@@ -445,7 +485,7 @@ export default function App() {
       </section>}
 
       {tab === 'swap' && <section className="page-content">
-        <div className="section-heading"><div><h2>مركز InstaSwap</h2><p>قارن عرض السعر، راجع الرسوم، ثم أنشئ طلب التبديل بنفسك.</p></div><span className="official-tag"><ShieldCheck size={15}/> Walletless API</span></div>
+        <div className="section-heading"><div><h2>InstaSwap Center</h2><p>Review a quote and fees, then create your swap order yourself.</p></div><span className="official-tag"><ShieldCheck size={15}/> Walletless API</span></div>
         <InstaSwapWidget />
       </section>}
 
@@ -466,7 +506,7 @@ function NewsList({ articles, loading, error, t }: { articles: Article[]; loadin
   if (loading) return <div className="state-message"><RefreshCw className="spin" size={19}/>{t.loading}</div>
   if (error) return <div className="state-message"><CircleHelp size={20}/>{t.newsFallback}</div>
   if (!articles.length) return <div className="state-message"><Newspaper size={20}/>{t.noNews}</div>
-  return <ul className="news-list">{articles.map((article, i) => <li key={article.url}><span className="news-index">{String(i + 1).padStart(2, '0')}</span><div className="news-copy"><a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a><small>{article.source}{article.publishedAt ? ` · ${new Date(article.publishedAt).toLocaleDateString()}` : ''}</small></div><a className="news-open" href={article.url} target="_blank" rel="noopener noreferrer" aria-label={article.title}>↗</a></li>)}</ul>
+  return <ul className="news-list">{articles.map((article, i) => <li key={article.url}><span className="news-index">{String(i + 1).padStart(2, '0')}</span><div className="news-copy"><a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a><small>{article.source}{article.category ? ` · ${article.category}` : ''}{article.publishedAt ? ` · ${new Date(article.publishedAt).toLocaleDateString()}` : ''}</small>{article.description && <p>{article.description}</p>}</div><a className="news-open" href={article.url} target="_blank" rel="noopener noreferrer" aria-label={article.title}>↗</a></li>)}</ul>
 }
 
 function BinanceWidget({ lang }: { lang: Lang }) {
