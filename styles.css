@@ -295,3 +295,10 @@ input,select,textarea{color:#142018}
 .intel-learning-card p{margin:0;color:#64756a;font-size:11px;line-height:1.8}
 .intel-disclaimer{padding:14px 16px;border:1px solid #e7dfc8;border-radius:12px;background:#fffaf0;color:#755a24;font-size:11px;line-height:1.8}
 @media(max-width:760px){.intel-overview,.intel-links,.intel-learning-grid{grid-template-columns:1fr}.intel-section{padding:15px}.intel-market-row{grid-template-columns:1fr 1fr .8fr;gap:7px}.intel-market-symbol,.intel-market-price{font-size:12px}.intel-market-change{font-size:11px}}
+
+
+/* Dashboard launcher for the safe, read-only and device-local tools. */
+.feature-strip{grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));align-items:stretch}
+.feature-strip .feature-tile{min-width:0;min-height:76px}
+.feature-strip .feature-tile>span:nth-child(2){min-width:0}
+.feature-strip .feature-tile small{line-height:1.55}
