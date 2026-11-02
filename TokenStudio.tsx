@@ -59,7 +59,7 @@ export default function TokenStudio({ lang }: { lang: 'ar' | 'fr' | 'en' }) {
       '}',
       ''
     ].join('\n')
-  }, [name, symbol, supply])
+  }, [name, symbol, supply, validSupply])
 
   async function connectWallet() {
     if (!window.ethereum) { setMessage(isAr ? 'لم يتم العثور على محفظة متوافقة مع Ethereum.' : 'No injected Ethereum wallet was found.'); return }
