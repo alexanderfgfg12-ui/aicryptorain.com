@@ -292,21 +292,10 @@ export default function App() {
           <div className="hero-art" aria-hidden="true"><div className="orb orb-one"/><div className="orb orb-two"/><div className="coin coin-btc">₿</div><div className="coin coin-eth">◆</div><div className="orbit orbit-one"/><div className="orbit orbit-two"/><div className="art-label"><Activity size={15}/> Market intelligence</div></div>
         </div>
 
-        <section className="home-swap-showcase">
-          <div className="home-swap-intro">
-            <div className="pill gold-pill"><RefreshCw size={14}/> INSTANT CROSS-CHAIN SWAP</div>
-            <h2>Swap crypto directly from the homepage</h2>
-            <p>Choose the assets to send and receive, enter an amount, and get a live quote from InstaSwap — without leaving AI Crypto Rain.</p>
-            <div className="home-swap-points"><span><ShieldCheck size={15}/> Quote before confirmation</span><span><Activity size={15}/> Track order status</span><span><Globe2 size={15}/> Cross-network swaps</span></div>
-          </div>
-          <div className="home-swap-widget"><InstaSwapWidget /></div>
-        </section>
-
         <div className="feature-strip" aria-label="Platform tools">
           <button className="feature-tile" onClick={() => navigate('markets')}><span className="feature-icon"><Activity size={19}/></span><span><b>Live prices</b><small>Track assets and 24-hour movement</small></span><ArrowUpRight size={16}/></button>
           <button className="feature-tile" onClick={() => navigate('analytics')}><span className="feature-icon"><LayoutDashboard size={19}/></span><span><b>Technical analysis dashboard</b><small>Candlesticks, indicators, and market trends</small></span><ArrowUpRight size={16}/></button>
           <button className="feature-tile" onClick={() => navigate('scanner')}><span className="feature-icon"><Search size={19}/></span><span><b>Market scanner</b><small>Discover top gainers and losers</small></span><ArrowUpRight size={16}/></button>
-          <button className="feature-tile" onClick={() => navigate('swap')}><span className="feature-icon"><RefreshCw size={19}/></span><span><b>InstaSwap swap</b><small>Get quotes and track swaps</small></span><ArrowUpRight size={16}/></button>
         </div>
 
         <div className="section-heading"><div><h2>{t.marketOverview}</h2><p>{t.liveData}</p></div><button className="text-button" onClick={() => navigate('markets')}>{t.markets} <span>↗</span></button></div>
