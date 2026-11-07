@@ -39,7 +39,6 @@ jobs:
           VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID || secrets.VITE_FIREBASE_APP_ID }}
           VITE_INSTASWAP_AFFILIATE_ID: ${{ vars.VITE_INSTASWAP_AFFILIATE_ID || secrets.VITE_INSTASWAP_AFFILIATE_ID }}
           VITE_BINANCE_REFERRAL_URL: ${{ vars.VITE_BINANCE_REFERRAL_URL }}
-          VITE_AI_API_URL: ${{ vars.VITE_AI_API_URL }}
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Preserve custom domain
