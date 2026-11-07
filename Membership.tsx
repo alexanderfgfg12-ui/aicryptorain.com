@@ -1,55 +1,35 @@
-import { BadgeCheck, CircleUserRound, LogIn, LogOut, ShieldCheck, Sparkles } from 'lucide-react'
+import { BadgeCheck, CircleUserRound, ShieldCheck, Sparkles } from 'lucide-react'
 
-type Props = {
-  email?: string | null
-  emailVerified: boolean
-  lang: 'ar' | 'fr' | 'en'
-  firebaseReady: boolean
-  onSignIn: () => void
-  onSignOut: () => void
-  onResendVerification: () => void
-}
+type Props = { lang: 'ar' | 'fr' | 'en' }
 
 const text = {
   ar: {
-    title: 'العضوية', subtitle: 'ابدأ مجاناً واستخدم أدوات المنصة الأساسية.',
-    free: 'الخطة المجانية', current: 'خطتك الحالية', price: '0 — بدون رسوم',
-    features: ['أسعار العملات ومتابعة السوق', 'ماسح السوق', 'قائمة العملات المفضلة على هذا الجهاز', 'تنبيهات الأسعار المحلية', 'الأخبار ومحتوى التوعية'],
-    account: 'حسابك', signed: 'تم تسجيل الدخول', guest: 'تستخدم المنصة كزائر',
-    signIn: 'تسجيل الدخول أو إنشاء حساب', signOut: 'تسجيل الخروج',
-    authReady: 'تسجيل الحسابات متاح عند إعداد Firebase من إعدادات المشروع.',
-    verified: 'تم تأكيد البريد الإلكتروني', verifyEmail: 'لم يتم تأكيد البريد الإلكتروني بعد', resendVerification: 'إعادة إرسال رسالة التحقق',
-    authMissing: 'تسجيل الدخول غير مفعّل بعد. يمكنك استخدام الأدوات المجانية دون حساب.',
+    title: 'العضوية', subtitle: 'استخدم المنصة مباشرة دون تسجيل أو إنشاء حساب.',
+    free: 'وصول مجاني', current: 'حالة الوصول', price: '0 — بدون رسوم',
+    features: ['أسعار العملات ومتابعة السوق', 'ماسح السوق', 'قائمة العملات المفضلة على هذا الجهاز', 'تنبيهات الأسعار المحلية', 'الأخبار ومحتوى التوعية', 'مساعد الذكاء الاصطناعي وInstaSwap'],
+    guest: 'تتصفح كزائر — لا يلزم حساب',
     noPaid: 'لا توجد مدفوعات أو تجديد تلقائي أو اشتراكات مدفوعة مفعّلة.',
-    privacy: 'لا تُرسل بيانات التنبيهات أو المفضلة إلى خادم؛ تُحفظ محلياً في متصفحك.',
+    privacy: 'تُحفظ قائمة المتابعة والتنبيهات محلياً في متصفحك.',
   },
   fr: {
-    title: 'Adhésion', subtitle: 'Commencez gratuitement avec les outils essentiels.',
-    free: 'Offre gratuite', current: 'Votre offre actuelle', price: '0 — sans frais',
-    features: ['Prix des cryptomonnaies et suivi du marché', 'Scanner de marché', 'Liste de suivi sur cet appareil', 'Alertes de prix locales', 'Actualités et contenu éducatif'],
-    account: 'Votre compte', signed: 'Connecté', guest: 'Vous utilisez la plateforme en invité',
-    signIn: 'Se connecter ou créer un compte', signOut: 'Se déconnecter',
-    authReady: 'Les comptes seront disponibles lorsque Firebase sera configuré.',
-    verified: 'Adresse e-mail vérifiée', verifyEmail: 'Adresse e-mail non vérifiée', resendVerification: 'Renvoyer l’e-mail de vérification',
-    authMissing: 'La connexion n’est pas encore activée. Les outils gratuits restent accessibles sans compte.',
+    title: 'Accès', subtitle: 'Utilisez la plateforme directement, sans inscription ni compte.',
+    free: 'Accès gratuit', current: 'Statut d’accès', price: '0 — sans frais',
+    features: ['Prix des cryptomonnaies et suivi du marché', 'Scanner de marché', 'Liste de suivi sur cet appareil', 'Alertes de prix locales', 'Actualités et contenu éducatif', 'Assistant IA et InstaSwap'],
+    guest: 'Navigation en invité — aucun compte requis',
     noPaid: 'Aucun paiement, renouvellement automatique ou abonnement payant n’est activé.',
     privacy: 'Les alertes et favoris restent dans le stockage local de votre navigateur.',
   },
   en: {
-    title: 'Membership', subtitle: 'Start free and use the platform’s core tools.',
-    free: 'Free plan', current: 'Your current plan', price: '0 — no fees',
-    features: ['Crypto prices and market tracking', 'Market scanner', 'Device-local watchlist', 'Local price alerts', 'News and educational content'],
-    account: 'Your account', signed: 'Signed in', guest: 'You are using the platform as a guest',
-    signIn: 'Sign in or create an account', signOut: 'Sign out',
-    authReady: 'Account registration is available once Firebase is configured for the project.',
-    verified: 'Email address verified', verifyEmail: 'Email address not verified yet', resendVerification: 'Resend verification email',
-    authMissing: 'Sign-in is not enabled yet. You can use the free tools without an account.',
+    title: 'Access', subtitle: 'Use the platform directly without signing in or creating an account.',
+    free: 'Free access', current: 'Access status', price: '0 — no fees',
+    features: ['Crypto prices and market tracking', 'Market scanner', 'Device-local watchlist', 'Local price alerts', 'News and educational content', 'AI assistant and InstaSwap'],
+    guest: 'Browsing as a guest — no account required',
     noPaid: 'No payments, auto-renewals, or paid subscriptions are enabled.',
-    privacy: 'Alerts and watchlist are stored locally in your browser, not sent to a server.',
+    privacy: 'Alerts and watchlist are stored locally in your browser.',
   },
 }
 
-export default function Membership({ email, emailVerified, lang, firebaseReady, onSignIn, onSignOut, onResendVerification }: Props) {
+export default function Membership({ lang }: Props) {
   const t = text[lang]
   return <section className="page-content">
     <div className="section-heading"><div><h2>{t.title}</h2><p>{t.subtitle}</p></div><span className="ai-badge"><CircleUserRound size={16}/></span></div>
@@ -64,14 +44,8 @@ export default function Membership({ email, emailVerified, lang, firebaseReady, 
       </section>
       <section className="panel membership-card">
         <div className="membership-plan-icon"><CircleUserRound size={23}/></div>
-        <p className="membership-kicker">{t.account}</p>
-        <h3>{email || t.guest}</h3>
-        <p className="membership-account-state">{email ? t.signed : t.guest}</p>
-        {email && <><p className="data-note">{emailVerified ? t.verified : t.verifyEmail}</p>{!emailVerified && <button className="button-ghost" type="button" onClick={onResendVerification}>{t.resendVerification}</button>}</>}
-        {email
-          ? <button className="button-ghost" type="button" onClick={onSignOut}><LogOut size={16}/>{t.signOut}</button>
-          : <button className="button-primary" type="button" onClick={onSignIn} disabled={!firebaseReady}><LogIn size={16}/>{t.signIn}</button>}
-        <p className="data-note">{firebaseReady ? t.authReady : t.authMissing}</p>
+        <p className="membership-kicker">{t.current}</p>
+        <h3>{t.guest}</h3>
         <p className="data-note"><ShieldCheck size={15}/>{t.privacy}</p>
       </section>
     </div>
