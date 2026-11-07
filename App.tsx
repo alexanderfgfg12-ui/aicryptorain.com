@@ -261,7 +261,7 @@ export default function App() {
         <div className="hero-panel">
           <div className="hero-copy"><div className="pill"><Sparkles size={14}/>{t.brand} <span>•</span> Web3 intelligence</div>
             <h2>{t.welcome}</h2><p>{t.subtitle}</p>
-            <div className="hero-buttons"><button className="button-primary" onClick={() => navigate('markets')}>{t.markets}<Activity size={17}/></button><button className="button-ghost" onClick={() => navigate('intelligence')}>{lang === 'ar' ? 'مركز الذكاء' : lang === 'fr' ? 'Intelligence' : 'Intelligence'} <Sparkles size={17}/></button><button className="button-ghost" onClick={() => navigate('swap')}>InstaSwap <RefreshCw size={17}/></button></div>
+            <div className="hero-buttons"><button className="button-primary" onClick={() => navigate('markets')}>{t.markets}<Activity size={17}/></button><button className="button-ghost" onClick={() => navigate('intelligence')}>{lang === 'ar' ? 'مركز الذكاء' : lang === 'fr' ? 'Intelligence' : 'Intelligence'} <Sparkles size={17}/></button></div>
           </div>
           <div className="hero-art" aria-hidden="true"><div className="orb orb-one"/><div className="orb orb-two"/><div className="coin coin-btc">₿</div><div className="coin coin-eth">◆</div><div className="orbit orbit-one"/><div className="orbit orbit-two"/><div className="art-label"><Activity size={15}/> Market intelligence</div></div>
         </div>
@@ -273,7 +273,6 @@ export default function App() {
           <button className="feature-tile" onClick={() => navigate('alerts')}><span className="feature-icon"><Bell size={19}/></span><span><b>Price alerts</b><small>Local alerts while the website is open</small></span><ArrowUpRight size={16}/></button>
           <button className="feature-tile" onClick={() => navigate('intelligence')}><span className="feature-icon"><ShieldCheck size={19}/></span><span><b>Crypto Intelligence</b><small>Independent research links and learning guides</small></span><ArrowUpRight size={16}/></button>
           <button className="feature-tile" onClick={() => navigate('assistant')}><span className="feature-icon"><Sparkles size={19}/></span><span><b>AI assistant</b><small>Educational answers about crypto markets</small></span><ArrowUpRight size={16}/></button>
-          <button className="feature-tile" onClick={() => navigate('swap')}><span className="feature-icon"><RefreshCw size={19}/></span><span><b>InstaSwap</b><small>Swap crypto directly from this website</small></span><ArrowUpRight size={16}/></button>
         </div>
 
         <div className="section-heading"><div><h2>{t.marketOverview}</h2><p>{t.liveData}</p></div><button className="text-button" onClick={() => navigate('markets')}>{t.markets} <span>↗</span></button></div>
