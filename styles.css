@@ -322,3 +322,14 @@ input,select,textarea{color:#142018}
   .multi-source-foot { flex-wrap: wrap; }
   .multi-source-foot > span:last-child { width: 100%; margin-inline-start: 24px; }
 }
+
+/* Official InstaSwap static widget embedded in the dashboard */
+.home-swap-showcase{margin:0 0 24px}
+.home-swap-widget{min-width:0;width:100%}
+.instaswap-embed-shell{width:100%;min-width:0;min-height:540px;overflow:hidden;border-radius:16px}
+.instaswap-embed-shell #instaswap-widget-container{width:100%;min-height:520px}
+.instaswap-embed-shell iframe{display:block;width:100%!important;max-width:100%;min-height:520px;border:0}
+.instaswap-embed-error{padding:18px;border:1px solid #e5c7a0;border-radius:12px;background:#fff9ed;color:#76521c;font-size:13px;line-height:1.7}
+.instaswap-embed-error a{color:#087d3e;font-weight:800}
+.swap-safety-note{grid-column:1/-1;margin:0!important}
+@media(max-width:760px){.instaswap-embed-shell{min-height:620px}.instaswap-embed-shell #instaswap-widget-container,.instaswap-embed-shell iframe{min-height:600px}}
