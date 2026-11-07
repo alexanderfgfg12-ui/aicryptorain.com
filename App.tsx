@@ -18,7 +18,7 @@ import CryptoIntelligence from './CryptoIntelligence'
 
 type Ticker = { symbol: string; lastPrice: string; priceChangePercent: string; quoteVolume: string }
 type Article = { title: string; url: string; source: string; publishedAt?: string; description?: string; category?: string }
-type Tab = 'dashboard' | 'analytics' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'news' | 'assistant' | 'intelligence'
+type Tab = 'dashboard' | 'analytics' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'news' | 'assistant' | 'intelligence' | 'swap'
 
 const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'TRXUSDT']
 const currencyFormat = (value: number, lang: Lang) => new Intl.NumberFormat(lang === 'ar' ? 'en-US' : lang, {
@@ -66,6 +66,39 @@ export default function App() {
     document.documentElement.lang = lang
     document.documentElement.dir = isRtl ? 'rtl' : 'ltr'
   }, [lang, isRtl])
+
+  // Load the official InstaSwap widget once and keep the swap experience on this site.
+  useEffect(() => {
+    const config = {
+      affiliateId: '0X0PUTVJ',
+      type: 'floating' as const,
+      horizontalPosition: 'right' as const,
+      verticalPosition: 'top' as const,
+      previewText: 'Trade Now',
+      sellAsset: 'BTC.BTC',
+      buyAsset: 'ETH.ETH',
+      sellAmount: '1',
+    }
+    const win = window as Window & { InstaswapWidget?: { init?: (options: typeof config) => void } }
+    const initialize = () => {
+      if (typeof win.InstaswapWidget?.init !== 'function') return false
+      win.InstaswapWidget.init(config)
+      return true
+    }
+    if (initialize()) return
+
+    let script = document.querySelector<HTMLScriptElement>('script[data-acr-instaswap]')
+    if (!script) {
+      script = document.createElement('script')
+      script.src = 'https://web.instaswap.com/widget.js'
+      script.async = true
+      script.dataset.acrInstaswap = 'true'
+      document.body.appendChild(script)
+    }
+    const onLoad = () => { initialize() }
+    script.addEventListener('load', onLoad)
+    return () => script?.removeEventListener('load', onLoad)
+  }, [])
 
   useEffect(() => {
     if (!auth) return
@@ -239,7 +272,8 @@ export default function App() {
     { id: 'news', label: t.news, icon: Newspaper },
     { id: 'assistant', label: t.assistant, icon: Sparkles },
     
-    { id: 'intelligence', label: lang === 'ar' ? 'مركز الذكاء والتحليل' : lang === 'fr' ? 'Crypto Intelligence' : 'Crypto Intelligence', icon: Sparkles }, 
+    { id: 'intelligence', label: lang === 'ar' ? 'مركز الذكاء والتحليل' : lang === 'fr' ? 'Crypto Intelligence' : 'Crypto Intelligence', icon: Sparkles },
+    { id: 'swap', label: 'InstaSwap', icon: RefreshCw }, 
   ]
 
   return <div className="app-shell" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -287,7 +321,7 @@ export default function App() {
         <div className="hero-panel">
           <div className="hero-copy"><div className="pill"><Sparkles size={14}/>{t.brand} <span>•</span> Web3 intelligence</div>
             <h2>{t.welcome}</h2><p>{t.subtitle}</p>
-            <div className="hero-buttons"><button className="button-primary" onClick={() => navigate('markets')}>{t.markets}<Activity size={17}/></button><button className="button-ghost" onClick={() => navigate('intelligence')}>{lang === 'ar' ? 'مركز الذكاء' : lang === 'fr' ? 'Intelligence' : 'Intelligence'} <Sparkles size={17}/></button><a className="button-ghost" href="https://instaswap.com/" target="_blank" rel="noopener noreferrer external" aria-label="Open the official InstaSwap website in a new tab">InstaSwap <ArrowUpRight size={17}/></a></div>
+            <div className="hero-buttons"><button className="button-primary" onClick={() => navigate('markets')}>{t.markets}<Activity size={17}/></button><button className="button-ghost" onClick={() => navigate('intelligence')}>{lang === 'ar' ? 'مركز الذكاء' : lang === 'fr' ? 'Intelligence' : 'Intelligence'} <Sparkles size={17}/></button><button className="button-ghost" onClick={() => navigate('swap')}>InstaSwap <RefreshCw size={17}/></button></div>
           </div>
           <div className="hero-art" aria-hidden="true"><div className="orb orb-one"/><div className="orb orb-two"/><div className="coin coin-btc">₿</div><div className="coin coin-eth">◆</div><div className="orbit orbit-one"/><div className="orbit orbit-two"/><div className="art-label"><Activity size={15}/> Market intelligence</div></div>
         </div>
@@ -299,7 +333,7 @@ export default function App() {
           <button className="feature-tile" onClick={() => navigate('alerts')}><span className="feature-icon"><Bell size={19}/></span><span><b>Price alerts</b><small>Local alerts while the website is open</small></span><ArrowUpRight size={16}/></button>
           <button className="feature-tile" onClick={() => navigate('intelligence')}><span className="feature-icon"><ShieldCheck size={19}/></span><span><b>Crypto Intelligence</b><small>Independent research links and learning guides</small></span><ArrowUpRight size={16}/></button>
           <button className="feature-tile" onClick={() => navigate('assistant')}><span className="feature-icon"><Sparkles size={19}/></span><span><b>AI assistant</b><small>Educational answers about crypto markets</small></span><ArrowUpRight size={16}/></button>
-          <a className="feature-tile" href="https://instaswap.com/" target="_blank" rel="noopener noreferrer external" aria-label="Open the official InstaSwap website in a new tab"><span className="feature-icon"><ArrowUpRight size={19}/></span><span><b>InstaSwap</b><small>Continue to the official site to complete a swap</small></span><ArrowUpRight size={16}/></a>
+          <button className="feature-tile" onClick={() => navigate('swap')}><span className="feature-icon"><RefreshCw size={19}/></span><span><b>InstaSwap</b><small>Swap crypto directly from this website</small></span><ArrowUpRight size={16}/></button>
         </div>
 
         <div className="section-heading"><div><h2>{t.marketOverview}</h2><p>{t.liveData}</p></div><button className="text-button" onClick={() => navigate('markets')}>{t.markets} <span>↗</span></button></div>
@@ -365,6 +399,16 @@ export default function App() {
       {tab === 'intelligence' && <section className="page-content"><div className="section-heading"><div><h2>{lang === 'ar' ? 'مركز ذكاء العملات الرقمية' : lang === 'fr' ? 'Crypto Intelligence Desk' : 'Crypto Intelligence Desk'}</h2><p>{lang === 'ar' ? 'بيانات سوق عامة وأدوات بحث وتعليم — دون محافظ أو معاملات.' : lang === 'fr' ? 'Données publiques, recherche et apprentissage — sans portefeuille ni transaction.' : 'Public market data, research and learning tools — no wallets or transactions.'}</p></div><span className="official-tag"><ShieldCheck size={15}/> Information only</span></div><CryptoIntelligence lang={lang} tickers={tickers} loading={loadingPrices} error={tickerError}/></section>}
 
       
+
+      {tab === 'swap' && <section className="page-content">
+        <div className="section-heading">
+          <div><h2>InstaSwap — on-site crypto swaps</h2><p>Use the floating Trade Now widget to swap supported assets without leaving AI Crypto Rain.</p></div>
+        </div>
+        <div className="panel" style={{ padding: 24, maxWidth: 820 }}>
+          <div className="panel-heading"><div><h3>Swap directly on AI Crypto Rain</h3><p>The official InstaSwap widget is loaded on this page. Select the floating Trade Now control at the top-right to open it.</p></div><RefreshCw size={22}/></div>
+          <p className="data-note">InstaSwap processes swaps and displays the route, fees, and deposit instructions before you send funds. AI Crypto Rain does not hold your assets or request wallet recovery phrases.</p>
+        </div>
+      </section>}
 
       <footer className="site-footer"><span>☔ AI Crypto Rain</span><span>{t.footer}</span><div><BookOpen size={15}/> Educational use only</div></footer>
     </main>
