@@ -1,24 +1,20 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import {
-  Activity, ArrowDownRight, ArrowUpRight, Bell, BookOpen, ChevronDown,
-  CircleHelp, Globe2, LayoutDashboard, LogIn, LogOut, Menu, Newspaper, RefreshCw,
-  Search, ShieldCheck, Sparkles, Star, X, Send, CircleUserRound,
+  Activity, ArrowDownRight, ArrowUpRight, Bell, BookOpen,
+  CircleHelp, Globe2, LayoutDashboard, Menu, Newspaper, RefreshCw,
+  Search, ShieldCheck, Sparkles, Star, Send, CircleUserRound,
 } from 'lucide-react'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import {
-  createUserWithEmailAndPassword, onAuthStateChanged, sendEmailVerification, signInWithEmailAndPassword,
-  signInWithPopup, signOut, type User,
-} from 'firebase/auth'
-import { auth, firebaseConfigured, googleProvider } from './firebase'
 import { translations, type Lang } from './i18n'
 import MarketScanner from './MarketScanner'
 import AlertCenter from './AlertCenter'
 import Membership from './Membership'
 import CryptoIntelligence from './CryptoIntelligence'
+import MarketSources from './MarketSources'
 
 type Ticker = { symbol: string; lastPrice: string; priceChangePercent: string; quoteVolume: string }
 type Article = { title: string; url: string; source: string; publishedAt?: string; description?: string; category?: string }
-type Tab = 'dashboard' | 'analytics' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'news' | 'assistant' | 'intelligence' | 'swap'
+type Tab = 'dashboard' | 'analytics' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'news' | 'assistant' | 'intelligence'
 
 const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'TRXUSDT']
 const currencyFormat = (value: number, lang: Lang) => new Intl.NumberFormat(lang === 'ar' ? 'en-US' : lang, {
@@ -45,13 +41,6 @@ export default function App() {
   const [watchlist, setWatchlist] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('acr-watchlist') || '["BTC","ETH","SOL"]') as string[] } catch { return ['BTC', 'ETH', 'SOL'] }
   })
-  const [user, setUser] = useState<User | null>(null)
-  const [authOpen, setAuthOpen] = useState(false)
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [authMessage, setAuthMessage] = useState('')
-  const [authBusy, setAuthBusy] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('')
   const [aiMessages, setAiMessages] = useState<{ role: 'assistant' | 'user'; text: string }[]>([])
   const [aiBusy, setAiBusy] = useState(false)
@@ -67,14 +56,14 @@ export default function App() {
     document.documentElement.dir = isRtl ? 'rtl' : 'ltr'
   }, [lang, isRtl])
 
-  // Load the official InstaSwap widget once and keep the swap experience on this site.
+  // Load the official InstaSwap widget on every visitor's device; provider availability is determined by InstaSwap.
   useEffect(() => {
     const config = {
       affiliateId: '0X0PUTVJ',
       type: 'floating' as const,
       horizontalPosition: 'right' as const,
-      verticalPosition: 'top' as const,
-      previewText: 'Trade Now',
+      verticalPosition: 'bottom' as const,
+      previewText: 'InstaSwap',
       sellAsset: 'BTC.BTC',
       buyAsset: 'ETH.ETH',
       sellAmount: '1',
@@ -98,11 +87,6 @@ export default function App() {
     const onLoad = () => { initialize() }
     script.addEventListener('load', onLoad)
     return () => script?.removeEventListener('load', onLoad)
-  }, [])
-
-  useEffect(() => {
-    if (!auth) return
-    return onAuthStateChanged(auth, setUser)
   }, [])
 
   useEffect(() => {
@@ -200,34 +184,6 @@ export default function App() {
     old.includes(symbol) ? old.filter(s => s !== symbol) : [...old, symbol],
   )
 
-  const submitAuth = async (event: FormEvent) => {
-    event.preventDefault()
-    if (!auth) { setAuthMessage(t.authDisabled); return }
-    setAuthBusy(true); setAuthMessage('')
-    try {
-      if (authMode === 'signup') {
-        const credential = await createUserWithEmailAndPassword(auth, email.trim(), password)
-        auth.languageCode = lang
-        try {
-          await sendEmailVerification(credential.user, {
-            url: window.location.origin,
-            handleCodeInApp: false,
-          })
-          setAuthMessage(t.authVerificationSent)
-        } catch {
-          setAuthMessage(t.authVerificationFailed)
-        }
-        setTab('membership')
-      } else {
-        await signInWithEmailAndPassword(auth, email.trim(), password)
-        setAuthMessage('')
-      }
-      setAuthOpen(false); setPassword('')
-    } catch {
-      setAuthMessage(t.authError)
-    } finally { setAuthBusy(false) }
-  }
-
   const submitAI = async (event: FormEvent) => {
     event.preventDefault()
     const prompt = aiPrompt.trim()
@@ -254,14 +210,6 @@ export default function App() {
     } finally { setAiBusy(false) }
   }
 
-  const signInGoogle = async () => {
-    if (!auth) { setAuthMessage(t.authDisabled); return }
-    setAuthBusy(true); setAuthMessage('')
-    try { await signInWithPopup(auth, googleProvider); setAuthOpen(false) }
-    catch { setAuthMessage(t.authError) }
-    finally { setAuthBusy(false) }
-  }
-
   const navItems: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
     { id: 'dashboard', label: t.dashboard, icon: LayoutDashboard },
     { id: 'analytics', label: lang === 'ar' ? 'التحليل الفني' : lang === 'fr' ? 'Analyse technique' : 'Technical analysis', icon: Activity },
@@ -273,7 +221,6 @@ export default function App() {
     { id: 'assistant', label: t.assistant, icon: Sparkles },
     
     { id: 'intelligence', label: lang === 'ar' ? 'مركز الذكاء والتحليل' : lang === 'fr' ? 'Crypto Intelligence' : 'Crypto Intelligence', icon: Sparkles },
-    { id: 'swap', label: 'InstaSwap', icon: RefreshCw }, 
   ]
 
   return <div className="app-shell" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -292,11 +239,7 @@ export default function App() {
       </nav>
       <div className="sidebar-bottom">
         <div className="secure-note"><ShieldCheck size={18}/><span>{t.statusDemo}</span></div>
-        <button className="user-button" onClick={() => user ? void signOut(auth!) : (setAuthOpen(true), setAuthMessage(''))}>
-          <span className="avatar">{user ? (user.email?.[0] || 'U').toUpperCase() : <LogIn size={18}/>}</span>
-          <span className="user-copy"><b>{user?.email || t.signIn}</b><small>{user ? t.signOut : 'Firebase Auth'}</small></span>
-          {user ? <LogOut size={16}/> : <ChevronDown size={16}/>}
-        </button>
+
       </div>
     </aside>
 
@@ -310,18 +253,15 @@ export default function App() {
         <div className="top-actions">
           <div className="language-picker"><Globe2 size={17}/><select aria-label="Language" value={lang} onChange={e => setLang(e.target.value as Lang)}><option value="ar">العربية</option><option value="fr">Français</option><option value="en">English</option></select></div>
           <button className="icon-button" aria-label={t.watchlist} onClick={() => navigate('markets')}><Bell size={19}/></button>
-          <button className="profile-button" onClick={() => user ? void signOut(auth!) : (setAuthOpen(true), setAuthMessage(''))}>
-            <span className="avatar">{user ? (user.email?.[0] || 'U').toUpperCase() : 'U'}</span><span>{user ? (user.email || '').split('@')[0] : t.signIn}</span>
-          </button>
+
         </div>
       </header>
-      {authMessage && !authOpen && <div className="auth-notice" role="status">{authMessage}</div>}
 
       {tab === 'dashboard' && <section className="page-content">
         <div className="hero-panel">
           <div className="hero-copy"><div className="pill"><Sparkles size={14}/>{t.brand} <span>•</span> Web3 intelligence</div>
             <h2>{t.welcome}</h2><p>{t.subtitle}</p>
-            <div className="hero-buttons"><button className="button-primary" onClick={() => navigate('markets')}>{t.markets}<Activity size={17}/></button><button className="button-ghost" onClick={() => navigate('intelligence')}>{lang === 'ar' ? 'مركز الذكاء' : lang === 'fr' ? 'Intelligence' : 'Intelligence'} <Sparkles size={17}/></button><button className="button-ghost" onClick={() => navigate('swap')}>InstaSwap <RefreshCw size={17}/></button></div>
+            <div className="hero-buttons"><button className="button-primary" onClick={() => navigate('markets')}>{t.markets}<Activity size={17}/></button><button className="button-ghost" onClick={() => navigate('intelligence')}>{lang === 'ar' ? 'مركز الذكاء' : lang === 'fr' ? 'Intelligence' : 'Intelligence'} <Sparkles size={17}/></button></div>
           </div>
           <div className="hero-art" aria-hidden="true"><div className="orb orb-one"/><div className="orb orb-two"/><div className="coin coin-btc">₿</div><div className="coin coin-eth">◆</div><div className="orbit orbit-one"/><div className="orbit orbit-two"/><div className="art-label"><Activity size={15}/> Market intelligence</div></div>
         </div>
@@ -333,7 +273,6 @@ export default function App() {
           <button className="feature-tile" onClick={() => navigate('alerts')}><span className="feature-icon"><Bell size={19}/></span><span><b>Price alerts</b><small>Local alerts while the website is open</small></span><ArrowUpRight size={16}/></button>
           <button className="feature-tile" onClick={() => navigate('intelligence')}><span className="feature-icon"><ShieldCheck size={19}/></span><span><b>Crypto Intelligence</b><small>Independent research links and learning guides</small></span><ArrowUpRight size={16}/></button>
           <button className="feature-tile" onClick={() => navigate('assistant')}><span className="feature-icon"><Sparkles size={19}/></span><span><b>AI assistant</b><small>Educational answers about crypto markets</small></span><ArrowUpRight size={16}/></button>
-          <button className="feature-tile" onClick={() => navigate('swap')}><span className="feature-icon"><RefreshCw size={19}/></span><span><b>InstaSwap</b><small>Swap crypto directly from this website</small></span><ArrowUpRight size={16}/></button>
         </div>
 
         <div className="section-heading"><div><h2>{t.marketOverview}</h2><p>{t.liveData}</p></div><button className="text-button" onClick={() => navigate('markets')}>{t.markets} <span>↗</span></button></div>
@@ -360,8 +299,7 @@ export default function App() {
 
           </div>
         </div>
-        <section className="panel converter-panel"><div className="panel-heading"><div><h3>{t.convertTitle}</h3><p>{t.convertDescription}</p></div><span className="official-tag"><ShieldCheck size={15}/> Binance</span></div><BinanceWidget lang={lang}/></section>
-      </section>}
+              </section>}
 
       {tab === 'markets' && <section className="page-content">
         <div className="section-heading"><div><h2>{t.marketOverview}</h2><p>{t.statusDemo}</p></div><div className="search-box"><Search size={17}/><input value={search} onChange={e => setSearch(e.target.value)} placeholder={t.search}/></div></div>
@@ -375,7 +313,7 @@ export default function App() {
           </tbody></table></div>
           <p className="data-note"><ShieldCheck size={15}/>{t.footer}</p>
         </section>
-        <section className="panel converter-panel"><div className="panel-heading"><div><h3>{t.convertTitle}</h3><p>{t.convertDescription}</p></div><span className="official-tag">Binance</span></div><BinanceWidget lang={lang}/></section>
+        <MarketSources lang={lang}/>
       </section>}
 
       {tab === 'analytics' && <section className="page-content"><AnalyticsDashboard lang={lang}/></section>}
@@ -384,7 +322,7 @@ export default function App() {
 
       {tab === 'alerts' && <AlertCenter tickers={tickers} lang={lang}/>}
 
-      {tab === 'membership' && <Membership email={user?.email} emailVerified={user?.emailVerified ?? false} lang={lang} firebaseReady={firebaseConfigured} onSignIn={() => { setAuthOpen(true); setAuthMessage('') }} onResendVerification={() => { if (auth?.currentUser) { auth.languageCode = lang; void sendEmailVerification(auth.currentUser, { url: window.location.origin, handleCodeInApp: false }).then(() => setAuthMessage(t.authVerificationSent)).catch(() => setAuthMessage(t.authVerificationFailed)) } }} onSignOut={() => { if (auth) void signOut(auth) }}/ >}
+      {tab === 'membership' && <Membership lang={lang} />}
 
       {tab === 'news' && <section className="page-content"><div className="section-heading"><div><h2>{t.newsTitle}</h2><p>{t.newsSource}</p></div><button className="button-ghost" onClick={() => void loadNews()}><RefreshCw size={16}/>{t.refresh}</button></div><section className="panel news-panel"><NewsList articles={articles} loading={newsLoading} error={newsError} t={t}/></section></section>}
 
@@ -400,26 +338,9 @@ export default function App() {
 
       
 
-      {tab === 'swap' && <section className="page-content">
-        <div className="section-heading">
-          <div><h2>InstaSwap — on-site crypto swaps</h2><p>Use the floating Trade Now widget to swap supported assets without leaving AI Crypto Rain.</p></div>
-        </div>
-        <div className="panel" style={{ padding: 24, maxWidth: 820 }}>
-          <div className="panel-heading"><div><h3>Swap directly on AI Crypto Rain</h3><p>The official InstaSwap widget is loaded on this page. Select the floating Trade Now control at the top-right to open it.</p></div><RefreshCw size={22}/></div>
-          <p className="data-note">InstaSwap processes swaps and displays the route, fees, and deposit instructions before you send funds. AI Crypto Rain does not hold your assets or request wallet recovery phrases.</p>
-        </div>
-      </section>}
-
       <footer className="site-footer"><span>☔ AI Crypto Rain</span><span>{t.footer}</span><div><BookOpen size={15}/> Educational use only</div></footer>
     </main>
 
-    {authOpen && <div className="modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setAuthOpen(false) }}><section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-      <button className="modal-close" aria-label={t.close} onClick={() => setAuthOpen(false)}><X size={19}/></button><div className="modal-brand">☔</div><h2 id="auth-title">{t.signIn}</h2>
-      <div className="auth-tabs"><button className={authMode === 'login' ? 'selected' : ''} onClick={() => setAuthMode('login')}>{t.login}</button><button className={authMode === 'signup' ? 'selected' : ''} onClick={() => setAuthMode('signup')}>{t.signup}</button></div>
-      <form onSubmit={submitAuth} className="auth-form"><label>{t.loginEmail}<input type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)}/></label><label>{t.password}<input type="password" required minLength={6} autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'} value={password} onChange={e => setPassword(e.target.value)}/></label><button className="button-primary full-button" disabled={authBusy}>{authBusy ? t.loading : authMode === 'login' ? t.login : t.signup}</button></form>
-      <button className="google-button" onClick={() => void signInGoogle()} disabled={authBusy}><span className="google-g">G</span>{t.google}</button>{authMessage && <p className="auth-message" role="status">{authMessage}</p>}
-      {!firebaseConfigured && <p className="auth-help">{t.authDisabled}</p>}
-    </section></div>}
   </div>
 }
 
@@ -429,55 +350,6 @@ function NewsList({ articles, loading, error, t }: { articles: Article[]; loadin
   if (!articles.length) return <div className="state-message"><Newspaper size={20}/>{t.noNews}</div>
   return <ul className="news-list">{articles.map((article, i) => <li key={article.url}><span className="news-index">{String(i + 1).padStart(2, '0')}</span><div className="news-copy"><a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a><small>{article.source}{article.category ? ` · ${article.category}` : ''}{article.publishedAt ? ` · ${new Date(article.publishedAt).toLocaleDateString()}` : ''}</small>{article.description && <p>{article.description}</p>}</div><a className="news-open" href={article.url} target="_blank" rel="noopener noreferrer" aria-label={article.title}>↗</a></li>)}</ul>
 }
-
-function BinanceWidget({ lang }: { lang: Lang }) {
-  useEffect(() => {
-    const scriptId = 'binance-converter-script'
-    const initWidget = () => {
-      const container = document.getElementById(`binance-widget-${lang}`)
-      if (!container) return
-      container.innerHTML = ''
-      const widget = document.createElement('div')
-      widget.className = 'binance-converter-widget'
-      widget.dataset.locale = lang
-      widget.dataset.coin = 'BTC'
-      widget.dataset.fiat = 'USD'
-      widget.dataset.width = '100%'
-      widget.dataset.theme = 'dark'
-      widget.dataset.transparent = 'false'
-      widget.dataset.showCta = 'true'
-      widget.dataset.ctaText = 'Buy {{coin}}'
-      widget.dataset.widgetTitle = '{{coin}} to {{currency}} Converter'
-      widget.dataset.coinLabel = 'Coin'
-      widget.dataset.currencyLabel = 'Currency'
-      widget.dataset.referralCode = '1038345380'
-      widget.dataset.poweredBy = 'Powered by'
-      widget.dataset.disclaimer = 'Disclaimer'
-      widget.dataset.utmSource = 'aicryptorain'
-      container.appendChild(widget)
-      const api = (window as Window & { cryptoConverterWidget?: { init?: () => void } }).cryptoConverterWidget
-      try { api?.init?.() } catch { /* Widget failures should not break the page. */ }
-    }
-    const existing = document.getElementById(scriptId) as HTMLScriptElement | null
-    if (existing) {
-      if ((window as Window & { cryptoConverterWidget?: unknown }).cryptoConverterWidget) initWidget()
-      else existing.addEventListener('load', initWidget, { once: true })
-    } else {
-      const script = document.createElement('script')
-      script.id = scriptId
-      script.src = 'https://public.bnbstatic.com/unpkg/growth-external-widget/cryptoConverterWidget@0.1.0.min.js'
-      script.async = true
-      script.onload = initWidget
-      document.body.appendChild(script)
-    }
-    return () => {
-      const container = document.getElementById(`binance-widget-${lang}`)
-      if (container) container.innerHTML = ''
-    }
-  }, [lang])
-  return <div id={`binance-widget-${lang}`} className="binance-widget-host"><div className="widget-placeholder"><Activity size={20}/> Loading Binance converter…</div></div>
-}
-
 
 type CandlePoint = { time: string; timestamp: number; open: number; high: number; low: number; close: number; volume: number; sma20?: number; ema50?: number; rsi?: number; macd?: number; signal?: number; histogram?: number }
 const emaSeries = (values: number[], period: number) => {
