@@ -1,13 +1,12 @@
-# InstaSwap setup for AI Crypto Rain
+# InstaSwap widget setup for AI Crypto Rain
 
-The swap screen is integrated but intentionally stays disabled until a real partner ID is configured.
+The official InstaSwap widget is embedded directly in the dashboard and the dedicated InstaSwap navigation page using the provider's static widget mode.
 
-1. Create a partner account at https://partners.instaswap.com.
-2. In the partner dashboard, add `https://aicryptorain.com` and `https://www.aicryptorain.com` to the widget/API allowed domains if both hosts are used.
-3. Copy the affiliate ID from the partner dashboard.
-4. In the hosting provider's project/build environment, set `VITE_INSTASWAP_AFFILIATE_ID` to that ID, then trigger a new production build/deployment.
-5. Verify a quote for a small amount before enabling public promotion. Always inspect the route, estimated output, network fees, minimum/maximum, recipient address, and refund address before creating a swap.
+1. In the InstaSwap Partners portal, make sure the affiliate ID used by the site is active.
+2. Allow-list both `https://aicryptorain.com` and `https://www.aicryptorain.com` if both hostnames are used.
+3. The site reads `VITE_INSTASWAP_AFFILIATE_ID` at build time. If it is not set, the existing public partner ID `0X0PUTVJ` is used as a fallback.
+4. Deploy the site and test the embedded widget on desktop and mobile. If it does not load, verify the partner ID, domain allow-list and browser network restrictions.
 
-Do not commit the real ID to the repository. This Vite variable is public client configuration, not a secret; never put wallet seed phrases, private keys, or user credentials in it. The app must not create a swap until a real ID is configured and the user explicitly requests it.
+The widget is loaded from `https://web.instaswap.com/widget.js` and initialized with `type: "static"` so the conversion interface appears inside the page rather than as a floating launcher. The widget is operated by InstaSwap; its available assets, routes, fees and terms may change.
 
-InstaSwap's fees, routing, supported assets, and affiliate terms are controlled by InstaSwap and can change. Revenue is not guaranteed. This integration is non-custodial but users still face blockchain, address, liquidity, and counterparty/protocol risks.
+The affiliate ID is public client configuration, not a secret. Never place wallet seed phrases, private keys or user credentials in the repository or build variables. Users review and confirm swaps directly through InstaSwap; AI Crypto Rain does not connect to wallets or execute transactions on a user's behalf.
