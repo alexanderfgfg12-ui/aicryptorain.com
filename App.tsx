@@ -43,6 +43,7 @@ export default function App() {
   const [aiPrompt, setAiPrompt] = useState('')
   const [aiMessages, setAiMessages] = useState<{ role: 'assistant' | 'user'; text: string }[]>([])
   const [aiBusy, setAiBusy] = useState(false)
+  const [transactionRegion, setTransactionRegion] = useState<'checking' | 'allowed' | 'blocked' | 'unavailable'>('checking')
 
   const t = translations[lang]
   const isRtl = lang === 'ar'
@@ -55,37 +56,70 @@ export default function App() {
     document.documentElement.dir = isRtl ? 'rtl' : 'ltr'
   }, [lang, isRtl])
 
-  // Load the official InstaSwap widget once and keep the swap experience on this site.
+  // Determine the visitor's country at the edge before loading any transaction widget.
   useEffect(() => {
-    const config = {
-      affiliateId: '0X0PUTVJ',
-      type: 'floating' as const,
-      horizontalPosition: 'right' as const,
-      verticalPosition: 'top' as const,
-      previewText: 'Trade Now',
-      sellAsset: 'BTC.BTC',
-      buyAsset: 'ETH.ETH',
-      sellAmount: '1',
-    }
-    const win = window as Window & { InstaswapWidget?: { init?: (options: typeof config) => void } }
-    const initialize = () => {
-      if (typeof win.InstaswapWidget?.init !== 'function') return false
-      win.InstaswapWidget.init(config)
-      return true
-    }
-    if (initialize()) return
+    let alive = true
+    const detectCountry = async (): Promise<string> => {
+      // Preferred: Cloudflare's country code for requests to a proxied custom domain.
+      try {
+        const response = await fetch('/cdn-cgi/trace', { cache: 'no-store' })
+        if (response.ok) {
+          const trace = await response.text()
+          const country = trace.match(/^loc=([A-Z]{2})$/m)?.[1]
+          if (country) return country
+        }
+      } catch { /* Try the site's Cloudflare Worker fallback. */ }
 
-    let script = document.querySelector<HTMLScriptElement>('script[data-acr-instaswap]')
-    if (!script) {
-      script = document.createElement('script')
-      script.src = 'https://web.instaswap.com/widget.js'
-      script.async = true
-      script.dataset.acrInstaswap = 'true'
-      document.body.appendChild(script)
+      // Fallback: the existing AI Worker exposes the same edge-derived country code.
+      const workerUrl = import.meta.env.VITE_AI_API_URL
+      if (workerUrl) {
+        const response = await fetch(`${workerUrl.replace(/\\/$/, '')}/country`, { cache: 'no-store' })
+        if (response.ok) {
+          const data = await response.json() as { country?: string }
+          if (typeof data.country === 'string' && /^[A-Z]{2}$/.test(data.country)) return data.country
+        }
+      }
+      throw new Error('Unable to verify visitor country')
     }
-    const onLoad = () => { initialize() }
-    script.addEventListener('load', onLoad)
-    return () => script?.removeEventListener('load', onLoad)
+
+    void detectCountry().then(country => {
+      if (!alive) return
+      setTransactionRegion(country === 'MA' ? 'blocked' : 'allowed')
+      if (country === 'MA') return
+
+      const config = {
+        affiliateId: '0X0PUTVJ',
+        type: 'floating' as const,
+        horizontalPosition: 'right' as const,
+        verticalPosition: 'top' as const,
+        previewText: 'Trade Now',
+        sellAsset: 'BTC.BTC',
+        buyAsset: 'ETH.ETH',
+        sellAmount: '1',
+      }
+      const win = window as Window & { InstaswapWidget?: { init?: (options: typeof config) => void } }
+      const initialize = () => {
+        if (typeof win.InstaswapWidget?.init !== 'function') return false
+        win.InstaswapWidget.init(config)
+        return true
+      }
+      if (initialize()) return
+
+      let script = document.querySelector<HTMLScriptElement>('script[data-acr-instaswap]')
+      if (!script) {
+        script = document.createElement('script')
+        script.src = 'https://web.instaswap.com/widget.js'
+        script.async = true
+        script.dataset.acrInstaswap = 'true'
+        document.body.appendChild(script)
+      }
+      const onLoad = () => { if (alive) initialize() }
+      script.addEventListener('load', onLoad, { once: true })
+    }).catch(() => {
+      if (alive) setTransactionRegion('unavailable')
+    })
+
+    return () => { alive = false }
   }, [])
 
   useEffect(() => {
@@ -341,6 +375,9 @@ export default function App() {
       
 
       {tab === 'swap' && <section className="page-content">
+        {transactionRegion === 'blocked' && <div className="inline-warning" role="status"><ShieldCheck size={18}/>{lang === 'ar' ? 'هذه الخدمة غير متاحة حالياً في المغرب.' : lang === 'fr' ? 'Ce service n’est actuellement pas disponible au Maroc.' : 'This transaction service is currently unavailable in Morocco.'}</div>}
+        {transactionRegion === 'checking' && <div className="inline-warning" role="status">{lang === 'ar' ? 'جارٍ التحقق من توفر الخدمة في منطقتك…' : lang === 'fr' ? 'Vérification de la disponibilité dans votre région…' : 'Checking service availability in your region…'}</div>}
+        {transactionRegion === 'unavailable' && <div className="inline-warning" role="status">{lang === 'ar' ? 'تعذر التحقق من بلدك؛ أوقفنا أداة المبادلة مؤقتاً حفاظاً على الامتثال.' : lang === 'fr' ? 'Pays non vérifié ; le widget de transaction est désactivé par précaution.' : 'We could not verify your country, so the transaction widget is disabled as a precaution.'}</div>}
         <div className="section-heading">
           <div><h2>InstaSwap — on-site crypto swaps</h2><p>Use the floating Trade Now widget to swap supported assets without leaving AI Crypto Rain.</p></div>
         </div>
