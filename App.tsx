@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Activity, ArrowDownRight, ArrowUpRight, Bell, BookOpen,
   CircleHelp, Globe2, LayoutDashboard, Menu, Newspaper, RefreshCw,
-  Search, ShieldCheck, Sparkles, Star, Send, CircleUserRound,
+  Search, ShieldCheck, Sparkles, Star, CircleUserRound,
 } from 'lucide-react'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { translations, type Lang } from './i18n'
@@ -11,10 +11,11 @@ import AlertCenter from './AlertCenter'
 import Membership from './Membership'
 import CryptoIntelligence from './CryptoIntelligence'
 import MarketSources from './MarketSources'
+import InstaSwapWidget from './InstaSwapWidget'
 
 type Ticker = { symbol: string; lastPrice: string; priceChangePercent: string; quoteVolume: string }
 type Article = { title: string; url: string; source: string; publishedAt?: string; description?: string; category?: string }
-type Tab = 'dashboard' | 'analytics' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'news' | 'assistant' | 'intelligence'
+type Tab = 'dashboard' | 'analytics' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'news' | 'swap' | 'intelligence'
 
 const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'TRXUSDT']
 const currencyFormat = (value: number, lang: Lang) => new Intl.NumberFormat(lang === 'ar' ? 'en-US' : lang, {
@@ -41,53 +42,15 @@ export default function App() {
   const [watchlist, setWatchlist] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('acr-watchlist') || '["BTC","ETH","SOL"]') as string[] } catch { return ['BTC', 'ETH', 'SOL'] }
   })
-  const [aiPrompt, setAiPrompt] = useState('')
-  const [aiMessages, setAiMessages] = useState<{ role: 'assistant' | 'user'; text: string }[]>([])
-  const [aiBusy, setAiBusy] = useState(false)
-
   const t = translations[lang]
   const isRtl = lang === 'ar'
   const referralUrl = import.meta.env.VITE_BINANCE_REFERRAL_URL || 'https://www.binance.com/ar/register?ref=1038345380'
-  const aiApiUrl = import.meta.env.VITE_AI_API_URL
 
   useEffect(() => {
     try { localStorage.setItem('acr-language', lang) } catch { /* Storage may be unavailable. */ }
     document.documentElement.lang = lang
     document.documentElement.dir = isRtl ? 'rtl' : 'ltr'
   }, [lang, isRtl])
-
-  // Load the official InstaSwap widget on every visitor's device; provider availability is determined by InstaSwap.
-  useEffect(() => {
-    const config = {
-      affiliateId: '0X0PUTVJ',
-      type: 'floating' as const,
-      horizontalPosition: 'right' as const,
-      verticalPosition: 'bottom' as const,
-      previewText: 'InstaSwap',
-      sellAsset: 'BTC.BTC',
-      buyAsset: 'ETH.ETH',
-      sellAmount: '1',
-    }
-    const win = window as Window & { InstaswapWidget?: { init?: (options: typeof config) => void } }
-    const initialize = () => {
-      if (typeof win.InstaswapWidget?.init !== 'function') return false
-      win.InstaswapWidget.init(config)
-      return true
-    }
-    if (initialize()) return
-
-    let script = document.querySelector<HTMLScriptElement>('script[data-acr-instaswap]')
-    if (!script) {
-      script = document.createElement('script')
-      script.src = 'https://web.instaswap.com/widget.js'
-      script.async = true
-      script.dataset.acrInstaswap = 'true'
-      document.body.appendChild(script)
-    }
-    const onLoad = () => { initialize() }
-    script.addEventListener('load', onLoad)
-    return () => script?.removeEventListener('load', onLoad)
-  }, [])
 
   useEffect(() => {
     let alive = true
@@ -184,32 +147,6 @@ export default function App() {
     old.includes(symbol) ? old.filter(s => s !== symbol) : [...old, symbol],
   )
 
-  const submitAI = async (event: FormEvent) => {
-    event.preventDefault()
-    const prompt = aiPrompt.trim()
-    if (!prompt || aiBusy) return
-    setAiMessages(old => [...old, { role: 'user', text: prompt }])
-    setAiPrompt('')
-    if (!aiApiUrl) {
-      setAiMessages(old => [...old, { role: 'assistant', text: t.aiUnavailable }])
-      return
-    }
-    setAiBusy(true)
-    try {
-      const response = await fetch(aiApiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: prompt, language: lang, market: tickers.slice(0, 8) }),
-      })
-      if (!response.ok) throw new Error('AI endpoint failed')
-      const data = await response.json() as { answer?: unknown }
-      const answer = typeof data.answer === 'string' ? data.answer : t.aiUnavailable
-      setAiMessages(old => [...old, { role: 'assistant', text: answer.slice(0, 8000) }])
-    } catch {
-      setAiMessages(old => [...old, { role: 'assistant', text: t.aiUnavailable }])
-    } finally { setAiBusy(false) }
-  }
-
   const navItems: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
     { id: 'dashboard', label: t.dashboard, icon: LayoutDashboard },
     { id: 'analytics', label: lang === 'ar' ? 'التحليل الفني' : lang === 'fr' ? 'Analyse technique' : 'Technical analysis', icon: Activity },
@@ -218,7 +155,7 @@ export default function App() {
     { id: 'alerts', label: lang === 'ar' ? 'تنبيهات الأسعار' : lang === 'fr' ? 'Alertes' : 'Price alerts', icon: Bell },
     { id: 'membership', label: lang === 'ar' ? 'العضوية المجانية' : lang === 'fr' ? 'Adhésion' : 'Membership', icon: CircleUserRound },
     { id: 'news', label: t.news, icon: Newspaper },
-    { id: 'assistant', label: t.assistant, icon: Sparkles },
+    { id: 'swap', label: t.swap, icon: RefreshCw },
     
     { id: 'intelligence', label: lang === 'ar' ? 'مركز الذكاء والتحليل' : lang === 'fr' ? 'Crypto Intelligence' : 'Crypto Intelligence', icon: Sparkles },
   ]
@@ -266,13 +203,15 @@ export default function App() {
           <div className="hero-art" aria-hidden="true"><div className="orb orb-one"/><div className="orb orb-two"/><div className="coin coin-btc">₿</div><div className="coin coin-eth">◆</div><div className="orbit orbit-one"/><div className="orbit orbit-two"/><div className="art-label"><Activity size={15}/> Market intelligence</div></div>
         </div>
 
+        <SwapExperience lang={lang}/>
+
         <div className="feature-strip" aria-label="Platform tools">
           <button className="feature-tile" onClick={() => navigate('markets')}><span className="feature-icon"><Activity size={19}/></span><span><b>Live prices</b><small>Track public market prices and 24-hour movement</small></span><ArrowUpRight size={16}/></button>
           <button className="feature-tile" onClick={() => navigate('analytics')}><span className="feature-icon"><LayoutDashboard size={19}/></span><span><b>Technical analysis</b><small>Charts and descriptive indicators from public data</small></span><ArrowUpRight size={16}/></button>
           <button className="feature-tile" onClick={() => navigate('scanner')}><span className="feature-icon"><Search size={19}/></span><span><b>Market scanner</b><small>Compare reported gainers, losers, and volume</small></span><ArrowUpRight size={16}/></button>
           <button className="feature-tile" onClick={() => navigate('alerts')}><span className="feature-icon"><Bell size={19}/></span><span><b>Price alerts</b><small>Local alerts while the website is open</small></span><ArrowUpRight size={16}/></button>
           <button className="feature-tile" onClick={() => navigate('intelligence')}><span className="feature-icon"><ShieldCheck size={19}/></span><span><b>Crypto Intelligence</b><small>Independent research links and learning guides</small></span><ArrowUpRight size={16}/></button>
-          <button className="feature-tile" onClick={() => navigate('assistant')}><span className="feature-icon"><Sparkles size={19}/></span><span><b>AI assistant</b><small>Educational answers about crypto markets</small></span><ArrowUpRight size={16}/></button>
+          <button className="feature-tile" onClick={() => navigate('swap')}><span className="feature-icon"><RefreshCw size={19}/></span><span><b>{t.swap}</b><small>{t.swapDescription}</small></span><ArrowUpRight size={16}/></button>
         </div>
 
         <div className="section-heading"><div><h2>{t.marketOverview}</h2><p>{t.liveData}</p></div><button className="text-button" onClick={() => navigate('markets')}>{t.markets} <span>↗</span></button></div>
@@ -326,13 +265,7 @@ export default function App() {
 
       {tab === 'news' && <section className="page-content"><div className="section-heading"><div><h2>{t.newsTitle}</h2><p>{t.newsSource}</p></div><button className="button-ghost" onClick={() => void loadNews()}><RefreshCw size={16}/>{t.refresh}</button></div><section className="panel news-panel"><NewsList articles={articles} loading={newsLoading} error={newsError} t={t}/></section></section>}
 
-      {tab === 'assistant' && <section className="page-content"><div className="section-heading"><div><h2>{t.aiTitle}</h2><p>{t.aiDisclaimer}</p></div><span className="ai-badge"><Sparkles size={16}/> AI</span></div>
-        <section className="panel assistant-panel"><div className="assistant-intro"><div className="assistant-avatar"><Sparkles size={25}/></div><div><h3>{t.aiTitle}</h3><p>{t.aiIntro}</p></div></div>
-          <div className="chat-log" aria-live="polite"><div className="chat-bubble assistant-bubble">{t.aiIntro}</div>{aiMessages.map((m,i)=><div key={i} className={`chat-bubble ${m.role === 'user' ? 'user-bubble' : 'assistant-bubble'}`}>{m.text}</div>)}{aiBusy && <div className="chat-bubble assistant-bubble">{t.loading}</div>}</div>
-          <form className="chat-form" onSubmit={submitAI}><input value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} placeholder={t.aiPlaceholder} aria-label={t.aiPlaceholder}/><button className="button-primary" type="submit" disabled={aiBusy || !aiPrompt.trim()}><Send size={17}/>{t.send}</button></form>
-          <p className="data-note"><ShieldCheck size={15}/>{t.aiDisclaimer}</p>
-        </section>
-      </section>}
+      {tab === 'swap' && <section className="page-content"><SwapExperience lang={lang}/></section>}
 
       {tab === 'intelligence' && <section className="page-content"><div className="section-heading"><div><h2>{lang === 'ar' ? 'مركز ذكاء العملات الرقمية' : lang === 'fr' ? 'Crypto Intelligence Desk' : 'Crypto Intelligence Desk'}</h2><p>{lang === 'ar' ? 'بيانات سوق عامة وأدوات بحث وتعليم — دون محافظ أو معاملات.' : lang === 'fr' ? 'Données publiques, recherche et apprentissage — sans portefeuille ni transaction.' : 'Public market data, research and learning tools — no wallets or transactions.'}</p></div><span className="official-tag"><ShieldCheck size={15}/> Information only</span></div><CryptoIntelligence lang={lang} tickers={tickers} loading={loadingPrices} error={tickerError}/></section>}
 
@@ -342,6 +275,24 @@ export default function App() {
     </main>
 
   </div>
+}
+
+function SwapExperience({ lang }: { lang: Lang }) {
+  const copy = {
+    ar: { title: 'حوّل العملات الرقمية عبر InstaSwap', description: 'واجهة التحويل الرسمية مدمجة هنا. اختر الأصول والمبلغ، راجع السعر والعناوين والرسوم لدى InstaSwap قبل تأكيد أي عملية.', note: 'لا يتصل الموقع بمحفظتك ولا ينفذ التحويل نيابةً عنك. تتم العملية وفق واجهة InstaSwap وموافقتك المباشرة.' },
+    fr: { title: 'Échangez vos cryptos avec InstaSwap', description: 'Le widget officiel est intégré ici. Choisissez les actifs et le montant, puis vérifiez le cours, les adresses et les frais sur InstaSwap avant toute confirmation.', note: 'Le site ne se connecte pas à votre portefeuille et ne réalise aucune opération à votre place. Vous gardez le contrôle de la confirmation.' },
+    en: { title: 'Swap crypto with InstaSwap', description: 'The official conversion widget is embedded here. Choose your assets and amount, then review the quote, addresses and fees before confirming with InstaSwap.', note: 'This website does not connect to your wallet or execute a swap on your behalf. You remain in control of every confirmation.' },
+  }[lang]
+  return <section className="home-swap-showcase" aria-label="InstaSwap conversion">
+    <div className="home-swap-intro">
+      <div className="pill">InstaSwap · Official widget</div>
+      <h2>{copy.title}</h2>
+      <p>{copy.description}</p>
+      <div className="home-swap-points"><span>✓ {lang === 'ar' ? 'دون تسجيل دخول' : lang === 'fr' ? 'Sans compte' : 'No account required'}</span><span>✓ {lang === 'ar' ? 'تحويلات متعددة الشبكات' : lang === 'fr' ? 'Multi-réseaux' : 'Cross-chain swaps'}</span><span>✓ {lang === 'ar' ? 'تأكيد العملية بيدك' : lang === 'fr' ? 'Confirmation sous votre contrôle' : 'You confirm every swap'}</span></div>
+    </div>
+    <div className="home-swap-widget"><InstaSwapWidget lang={lang}/></div>
+    <p className="data-note swap-safety-note">{copy.note}</p>
+  </section>
 }
 
 function NewsList({ articles, loading, error, t }: { articles: Article[]; loading: boolean; error: boolean; t: typeof translations[Lang] }) {
