@@ -1,15 +1,10 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import {
-  Activity, ArrowDownRight, ArrowUpRight, Bell, BookOpen, ChevronDown,
-  CircleHelp, Globe2, LayoutDashboard, LogIn, LogOut, Menu, Newspaper, RefreshCw,
-  Search, ShieldCheck, Sparkles, Star, X, Send, CircleUserRound,
+  Activity, ArrowDownRight, ArrowUpRight, Bell, BookOpen,
+  CircleHelp, Globe2, LayoutDashboard, Menu, Newspaper, RefreshCw,
+  Search, ShieldCheck, Sparkles, Star, Send, CircleUserRound,
 } from 'lucide-react'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import {
-  createUserWithEmailAndPassword, onAuthStateChanged, sendEmailVerification, signInWithEmailAndPassword,
-  signInWithPopup, signOut, type User,
-} from 'firebase/auth'
-import { auth, firebaseConfigured, googleProvider } from './firebase'
 import { translations, type Lang } from './i18n'
 import MarketScanner from './MarketScanner'
 import AlertCenter from './AlertCenter'
@@ -45,13 +40,6 @@ export default function App() {
   const [watchlist, setWatchlist] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('acr-watchlist') || '["BTC","ETH","SOL"]') as string[] } catch { return ['BTC', 'ETH', 'SOL'] }
   })
-  const [user, setUser] = useState<User | null>(null)
-  const [authOpen, setAuthOpen] = useState(false)
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [authMessage, setAuthMessage] = useState('')
-  const [authBusy, setAuthBusy] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('')
   const [aiMessages, setAiMessages] = useState<{ role: 'assistant' | 'user'; text: string }[]>([])
   const [aiBusy, setAiBusy] = useState(false)
@@ -98,11 +86,6 @@ export default function App() {
     const onLoad = () => { initialize() }
     script.addEventListener('load', onLoad)
     return () => script?.removeEventListener('load', onLoad)
-  }, [])
-
-  useEffect(() => {
-    if (!auth) return
-    return onAuthStateChanged(auth, setUser)
   }, [])
 
   useEffect(() => {
@@ -200,34 +183,6 @@ export default function App() {
     old.includes(symbol) ? old.filter(s => s !== symbol) : [...old, symbol],
   )
 
-  const submitAuth = async (event: FormEvent) => {
-    event.preventDefault()
-    if (!auth) { setAuthMessage(t.authDisabled); return }
-    setAuthBusy(true); setAuthMessage('')
-    try {
-      if (authMode === 'signup') {
-        const credential = await createUserWithEmailAndPassword(auth, email.trim(), password)
-        auth.languageCode = lang
-        try {
-          await sendEmailVerification(credential.user, {
-            url: window.location.origin,
-            handleCodeInApp: false,
-          })
-          setAuthMessage(t.authVerificationSent)
-        } catch {
-          setAuthMessage(t.authVerificationFailed)
-        }
-        setTab('membership')
-      } else {
-        await signInWithEmailAndPassword(auth, email.trim(), password)
-        setAuthMessage('')
-      }
-      setAuthOpen(false); setPassword('')
-    } catch {
-      setAuthMessage(t.authError)
-    } finally { setAuthBusy(false) }
-  }
-
   const submitAI = async (event: FormEvent) => {
     event.preventDefault()
     const prompt = aiPrompt.trim()
@@ -252,14 +207,6 @@ export default function App() {
     } catch {
       setAiMessages(old => [...old, { role: 'assistant', text: t.aiUnavailable }])
     } finally { setAiBusy(false) }
-  }
-
-  const signInGoogle = async () => {
-    if (!auth) { setAuthMessage(t.authDisabled); return }
-    setAuthBusy(true); setAuthMessage('')
-    try { await signInWithPopup(auth, googleProvider); setAuthOpen(false) }
-    catch { setAuthMessage(t.authError) }
-    finally { setAuthBusy(false) }
   }
 
   const navItems: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
@@ -292,11 +239,7 @@ export default function App() {
       </nav>
       <div className="sidebar-bottom">
         <div className="secure-note"><ShieldCheck size={18}/><span>{t.statusDemo}</span></div>
-        <button className="user-button" onClick={() => user ? void signOut(auth!) : (setAuthOpen(true), setAuthMessage(''))}>
-          <span className="avatar">{user ? (user.email?.[0] || 'U').toUpperCase() : <LogIn size={18}/>}</span>
-          <span className="user-copy"><b>{user?.email || t.signIn}</b><small>{user ? t.signOut : 'Firebase Auth'}</small></span>
-          {user ? <LogOut size={16}/> : <ChevronDown size={16}/>}
-        </button>
+
       </div>
     </aside>
 
@@ -310,12 +253,9 @@ export default function App() {
         <div className="top-actions">
           <div className="language-picker"><Globe2 size={17}/><select aria-label="Language" value={lang} onChange={e => setLang(e.target.value as Lang)}><option value="ar">العربية</option><option value="fr">Français</option><option value="en">English</option></select></div>
           <button className="icon-button" aria-label={t.watchlist} onClick={() => navigate('markets')}><Bell size={19}/></button>
-          <button className="profile-button" onClick={() => user ? void signOut(auth!) : (setAuthOpen(true), setAuthMessage(''))}>
-            <span className="avatar">{user ? (user.email?.[0] || 'U').toUpperCase() : 'U'}</span><span>{user ? (user.email || '').split('@')[0] : t.signIn}</span>
-          </button>
+
         </div>
       </header>
-      {authMessage && !authOpen && <div className="auth-notice" role="status">{authMessage}</div>}
 
       {tab === 'dashboard' && <section className="page-content">
         <div className="hero-panel">
@@ -384,7 +324,7 @@ export default function App() {
 
       {tab === 'alerts' && <AlertCenter tickers={tickers} lang={lang}/>}
 
-      {tab === 'membership' && <Membership email={user?.email} emailVerified={user?.emailVerified ?? false} lang={lang} firebaseReady={firebaseConfigured} onSignIn={() => { setAuthOpen(true); setAuthMessage('') }} onResendVerification={() => { if (auth?.currentUser) { auth.languageCode = lang; void sendEmailVerification(auth.currentUser, { url: window.location.origin, handleCodeInApp: false }).then(() => setAuthMessage(t.authVerificationSent)).catch(() => setAuthMessage(t.authVerificationFailed)) } }} onSignOut={() => { if (auth) void signOut(auth) }}/ >}
+      {tab === 'membership' && <Membership lang={lang} />}
 
       {tab === 'news' && <section className="page-content"><div className="section-heading"><div><h2>{t.newsTitle}</h2><p>{t.newsSource}</p></div><button className="button-ghost" onClick={() => void loadNews()}><RefreshCw size={16}/>{t.refresh}</button></div><section className="panel news-panel"><NewsList articles={articles} loading={newsLoading} error={newsError} t={t}/></section></section>}
 
@@ -413,13 +353,6 @@ export default function App() {
       <footer className="site-footer"><span>☔ AI Crypto Rain</span><span>{t.footer}</span><div><BookOpen size={15}/> Educational use only</div></footer>
     </main>
 
-    {authOpen && <div className="modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) setAuthOpen(false) }}><section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-      <button className="modal-close" aria-label={t.close} onClick={() => setAuthOpen(false)}><X size={19}/></button><div className="modal-brand">☔</div><h2 id="auth-title">{t.signIn}</h2>
-      <div className="auth-tabs"><button className={authMode === 'login' ? 'selected' : ''} onClick={() => setAuthMode('login')}>{t.login}</button><button className={authMode === 'signup' ? 'selected' : ''} onClick={() => setAuthMode('signup')}>{t.signup}</button></div>
-      <form onSubmit={submitAuth} className="auth-form"><label>{t.loginEmail}<input type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)}/></label><label>{t.password}<input type="password" required minLength={6} autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'} value={password} onChange={e => setPassword(e.target.value)}/></label><button className="button-primary full-button" disabled={authBusy}>{authBusy ? t.loading : authMode === 'login' ? t.login : t.signup}</button></form>
-      <button className="google-button" onClick={() => void signInGoogle()} disabled={authBusy}><span className="google-g">G</span>{t.google}</button>{authMessage && <p className="auth-message" role="status">{authMessage}</p>}
-      {!firebaseConfigured && <p className="auth-help">{t.authDisabled}</p>}
-    </section></div>}
   </div>
 }
 
