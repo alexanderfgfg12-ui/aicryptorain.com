@@ -3,7 +3,7 @@ export type Lang = 'ar' | 'fr' | 'en'
 export const translations = {
   ar: {
     brand: 'AI Crypto Rain', tagline: 'ذكاء السوق، في مكان واحد',
-    dashboard: 'لوحة السوق', markets: 'الأسواق', news: 'الأخبار', swap: 'التحويل عبر InstaSwap',
+    dashboard: 'لوحة السوق', markets: 'الأسواق', news: 'الأخبار',
     watchlist: 'قائمة المتابعة', signIn: 'تسجيل الدخول', signOut: 'تسجيل الخروج',
     welcome: 'مرحبًا بك في AI Crypto Rain', subtitle: 'تابع السوق، افهم الأخبار، واتخذ قراراتك بناءً على معلومات أوضح.',
     marketOverview: 'نظرة عامة على السوق', liveData: 'بيانات سوق عامة عبر Binance',
@@ -26,7 +26,7 @@ export const translations = {
   },
   fr: {
     brand: 'AI Crypto Rain', tagline: 'L’intelligence du marché, au même endroit',
-    dashboard: 'Marché', markets: 'Marchés', news: 'Actualités', swap: 'Échange InstaSwap',
+    dashboard: 'Marché', markets: 'Marchés', news: 'Actualités',
     watchlist: 'Suivi', signIn: 'Connexion', signOut: 'Déconnexion',
     welcome: 'Bienvenue sur AI Crypto Rain', subtitle: 'Suivez le marché et comprenez les actualités pour décider avec plus de clarté.',
     marketOverview: 'Vue d’ensemble du marché', liveData: 'Données publiques du marché via Binance',
@@ -49,7 +49,7 @@ export const translations = {
   },
   en: {
     brand: 'AI Crypto Rain', tagline: 'Market intelligence, in one place',
-    dashboard: 'Dashboard', markets: 'Markets', news: 'News', swap: 'InstaSwap Swap',
+    dashboard: 'Dashboard', markets: 'Markets', news: 'News',
     watchlist: 'Watchlist', signIn: 'Sign in', signOut: 'Sign out',
     welcome: 'Welcome to AI Crypto Rain', subtitle: 'Track markets, understand the news, and make better-informed decisions.',
     marketOverview: 'Market overview', liveData: 'Public market data via Binance',
