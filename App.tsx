@@ -279,9 +279,9 @@ export default function App() {
 
 function SwapExperience({ lang }: { lang: Lang }) {
   const copy = {
-    ar: { title: 'حوّل العملات الرقمية عبر InstaSwap', description: 'واجهة التحويل الرسمية مدمجة هنا. اختر الأصول والمبلغ، راجع السعر والعناوين والرسوم لدى InstaSwap قبل تأكيد أي عملية.', note: 'لا يتصل الموقع بمحفظتك ولا ينفذ التحويل نيابةً عنك. تتم العملية وفق واجهة InstaSwap وموافقتك المباشرة.' },
-    fr: { title: 'Échangez vos cryptos avec InstaSwap', description: 'Le widget officiel est intégré ici. Choisissez les actifs et le montant, puis vérifiez le cours, les adresses et les frais sur InstaSwap avant toute confirmation.', note: 'Le site ne se connecte pas à votre portefeuille et ne réalise aucune opération à votre place. Vous gardez le contrôle de la confirmation.' },
-    en: { title: 'Swap crypto with InstaSwap', description: 'The official conversion widget is embedded here. Choose your assets and amount, then review the quote, addresses and fees before confirming with InstaSwap.', note: 'This website does not connect to your wallet or execute a swap on your behalf. You remain in control of every confirmation.' },
+    ar: { title: 'حوّل العملات الرقمية عبر InstaSwap', description: 'تابع إلى موقع InstaSwap الرسمي لاختيار الأصول والمبلغ ومراجعة السعر والعناوين والرسوم وتأكيد التحويل هناك.', note: 'لا يتصل الموقع بمحفظتك ولا ينفذ التحويل نيابةً عنك. تتم العملية وفق واجهة InstaSwap وموافقتك المباشرة.' },
+    fr: { title: 'Échangez vos cryptos avec InstaSwap', description: 'Continuez sur le site officiel InstaSwap pour choisir les actifs et le montant, vérifier le cours, les adresses et les frais, puis confirmer l’échange.', note: 'Le site ne se connecte pas à votre portefeuille et ne réalise aucune opération à votre place. Vous gardez le contrôle de la confirmation.' },
+    en: { title: 'Swap crypto with InstaSwap', description: 'Continue to the official InstaSwap website to choose assets and amount, review the quote, addresses and fees, and confirm the swap there.', note: 'This website does not connect to your wallet or execute a swap on your behalf. You remain in control of every confirmation.' },
   }[lang]
   return <section className="home-swap-showcase" aria-label="InstaSwap conversion">
     <div className="home-swap-intro">
