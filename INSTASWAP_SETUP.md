@@ -1,12 +1,22 @@
-# InstaSwap widget setup for AI Crypto Rain
+# InstaSwap official-site handoff for AI Crypto Rain
 
-The official InstaSwap widget is embedded directly in the dashboard and the dedicated InstaSwap navigation page using the provider's static widget mode.
+AI Crypto Rain displays a branded handoff card for InstaSwap. The conversion flow itself is completed on the official InstaSwap website.
 
-1. In the InstaSwap Partners portal, make sure the affiliate ID used by the site is active.
-2. Allow-list both `https://aicryptorain.com` and `https://www.aicryptorain.com` if both hostnames are used.
-3. The site reads `VITE_INSTASWAP_AFFILIATE_ID` at build time. If it is not set, the existing public partner ID `0X0PUTVJ` is used as a fallback.
-4. Deploy the site and test the embedded widget on desktop and mobile. If it does not load, verify the partner ID, domain allow-list and browser network restrictions.
+## Current behavior
 
-The widget is loaded from `https://web.instaswap.com/widget.js` and initialized with `type: "static"` so the conversion interface appears inside the page rather than as a floating launcher. The widget is operated by InstaSwap; its available assets, routes, fees and terms may change.
+1. The dashboard and dedicated Swap page show the InstaSwap handoff card.
+2. The **Swap on InstaSwap** link opens `https://app.instaswap.com` in a new tab.
+3. Asset selection, quote review, transaction details, and confirmation are handled on InstaSwap.
+4. AI Crypto Rain does not load the embedded `widget.js`, request wallet credentials, connect to a wallet, create swap orders, or execute transactions.
 
-The affiliate ID is public client configuration, not a secret. Never place wallet seed phrases, private keys or user credentials in the repository or build variables. Users review and confirm swaps directly through InstaSwap; AI Crypto Rain does not connect to wallets or execute transactions on a user's behalf.
+## Domain and DNS
+
+The link opens the official InstaSwap application directly. The site's DNS records do not proxy or operate the provider's swap application. Keep the existing DNS records unchanged unless InstaSwap explicitly instructs otherwise.
+
+## Affiliate attribution
+
+The former embedded widget used affiliate ID `0X0PUTVJ`. That ID is not automatically attached to the plain official-app URL. If referral attribution is required, obtain the official referral/deep link from the InstaSwap Partners Dashboard and replace the `officialUrl` constant in `InstaSwapWidget.tsx` with that exact provider-issued URL. Do not invent query parameters.
+
+## Safety
+
+Never add wallet seed phrases, private keys, or user credentials to this repository. Users should verify the domain is `app.instaswap.com` before entering transaction information.
