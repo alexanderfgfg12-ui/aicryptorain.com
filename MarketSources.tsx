@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Activity, RefreshCw, ShieldCheck } from 'lucide-react'
+import { RefreshCw, ShieldCheck } from 'lucide-react'
 import type { Lang } from './i18n'
 
 type AssetKey = 'BTC' | 'ETH' | 'BNB' | 'SOL' | 'XRP' | 'ADA' | 'DOGE' | 'TRX'
