@@ -10,10 +10,11 @@ import MarketScanner from './MarketScanner'
 import AlertCenter from './AlertCenter'
 import Membership from './Membership'
 import CryptoIntelligence from './CryptoIntelligence'
+import MarketSources from './MarketSources'
 
 type Ticker = { symbol: string; lastPrice: string; priceChangePercent: string; quoteVolume: string }
 type Article = { title: string; url: string; source: string; publishedAt?: string; description?: string; category?: string }
-type Tab = 'dashboard' | 'analytics' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'news' | 'assistant' | 'intelligence' | 'swap'
+type Tab = 'dashboard' | 'analytics' | 'markets' | 'scanner' | 'alerts' | 'membership' | 'news' | 'assistant' | 'intelligence'
 
 const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT', 'DOGEUSDT', 'TRXUSDT']
 const currencyFormat = (value: number, lang: Lang) => new Intl.NumberFormat(lang === 'ar' ? 'en-US' : lang, {
@@ -220,7 +221,6 @@ export default function App() {
     { id: 'assistant', label: t.assistant, icon: Sparkles },
     
     { id: 'intelligence', label: lang === 'ar' ? 'مركز الذكاء والتحليل' : lang === 'fr' ? 'Crypto Intelligence' : 'Crypto Intelligence', icon: Sparkles },
-    { id: 'swap', label: 'InstaSwap', icon: RefreshCw }, 
   ]
 
   return <div className="app-shell" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -300,8 +300,7 @@ export default function App() {
 
           </div>
         </div>
-        <section className="panel converter-panel"><div className="panel-heading"><div><h3>{t.convertTitle}</h3><p>{t.convertDescription}</p></div><span className="official-tag"><ShieldCheck size={15}/> Binance</span></div><BinanceWidget lang={lang}/></section>
-      </section>}
+              </section>}
 
       {tab === 'markets' && <section className="page-content">
         <div className="section-heading"><div><h2>{t.marketOverview}</h2><p>{t.statusDemo}</p></div><div className="search-box"><Search size={17}/><input value={search} onChange={e => setSearch(e.target.value)} placeholder={t.search}/></div></div>
@@ -315,7 +314,7 @@ export default function App() {
           </tbody></table></div>
           <p className="data-note"><ShieldCheck size={15}/>{t.footer}</p>
         </section>
-        <section className="panel converter-panel"><div className="panel-heading"><div><h3>{t.convertTitle}</h3><p>{t.convertDescription}</p></div><span className="official-tag">Binance</span></div><BinanceWidget lang={lang}/></section>
+        <MarketSources lang={lang}/>
       </section>}
 
       {tab === 'analytics' && <section className="page-content"><AnalyticsDashboard lang={lang}/></section>}
@@ -340,16 +339,6 @@ export default function App() {
 
       
 
-      {tab === 'swap' && <section className="page-content">
-        <div className="section-heading">
-          <div><h2>InstaSwap — on-site crypto swaps</h2><p>Use the floating Trade Now widget to swap supported assets without leaving AI Crypto Rain.</p></div>
-        </div>
-        <div className="panel" style={{ padding: 24, maxWidth: 820 }}>
-          <div className="panel-heading"><div><h3>Swap directly on AI Crypto Rain</h3><p>The official InstaSwap widget is loaded on this page. Select the floating Trade Now control at the top-right to open it.</p></div><RefreshCw size={22}/></div>
-          <p className="data-note">InstaSwap processes swaps and displays the route, fees, and deposit instructions before you send funds. AI Crypto Rain does not hold your assets or request wallet recovery phrases.</p>
-        </div>
-      </section>}
-
       <footer className="site-footer"><span>☔ AI Crypto Rain</span><span>{t.footer}</span><div><BookOpen size={15}/> Educational use only</div></footer>
     </main>
 
@@ -362,55 +351,6 @@ function NewsList({ articles, loading, error, t }: { articles: Article[]; loadin
   if (!articles.length) return <div className="state-message"><Newspaper size={20}/>{t.noNews}</div>
   return <ul className="news-list">{articles.map((article, i) => <li key={article.url}><span className="news-index">{String(i + 1).padStart(2, '0')}</span><div className="news-copy"><a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a><small>{article.source}{article.category ? ` · ${article.category}` : ''}{article.publishedAt ? ` · ${new Date(article.publishedAt).toLocaleDateString()}` : ''}</small>{article.description && <p>{article.description}</p>}</div><a className="news-open" href={article.url} target="_blank" rel="noopener noreferrer" aria-label={article.title}>↗</a></li>)}</ul>
 }
-
-function BinanceWidget({ lang }: { lang: Lang }) {
-  useEffect(() => {
-    const scriptId = 'binance-converter-script'
-    const initWidget = () => {
-      const container = document.getElementById(`binance-widget-${lang}`)
-      if (!container) return
-      container.innerHTML = ''
-      const widget = document.createElement('div')
-      widget.className = 'binance-converter-widget'
-      widget.dataset.locale = lang
-      widget.dataset.coin = 'BTC'
-      widget.dataset.fiat = 'USD'
-      widget.dataset.width = '100%'
-      widget.dataset.theme = 'dark'
-      widget.dataset.transparent = 'false'
-      widget.dataset.showCta = 'true'
-      widget.dataset.ctaText = 'Buy {{coin}}'
-      widget.dataset.widgetTitle = '{{coin}} to {{currency}} Converter'
-      widget.dataset.coinLabel = 'Coin'
-      widget.dataset.currencyLabel = 'Currency'
-      widget.dataset.referralCode = '1038345380'
-      widget.dataset.poweredBy = 'Powered by'
-      widget.dataset.disclaimer = 'Disclaimer'
-      widget.dataset.utmSource = 'aicryptorain'
-      container.appendChild(widget)
-      const api = (window as Window & { cryptoConverterWidget?: { init?: () => void } }).cryptoConverterWidget
-      try { api?.init?.() } catch { /* Widget failures should not break the page. */ }
-    }
-    const existing = document.getElementById(scriptId) as HTMLScriptElement | null
-    if (existing) {
-      if ((window as Window & { cryptoConverterWidget?: unknown }).cryptoConverterWidget) initWidget()
-      else existing.addEventListener('load', initWidget, { once: true })
-    } else {
-      const script = document.createElement('script')
-      script.id = scriptId
-      script.src = 'https://public.bnbstatic.com/unpkg/growth-external-widget/cryptoConverterWidget@0.1.0.min.js'
-      script.async = true
-      script.onload = initWidget
-      document.body.appendChild(script)
-    }
-    return () => {
-      const container = document.getElementById(`binance-widget-${lang}`)
-      if (container) container.innerHTML = ''
-    }
-  }, [lang])
-  return <div id={`binance-widget-${lang}`} className="binance-widget-host"><div className="widget-placeholder"><Activity size={20}/> Loading Binance converter…</div></div>
-}
-
 
 type CandlePoint = { time: string; timestamp: number; open: number; high: number; low: number; close: number; volume: number; sma20?: number; ema50?: number; rsi?: number; macd?: number; signal?: number; histogram?: number }
 const emaSeries = (values: number[], period: number) => {
