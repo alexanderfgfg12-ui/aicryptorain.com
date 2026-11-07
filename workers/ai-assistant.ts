@@ -33,7 +33,7 @@ export default {
     const origin = allowedOrigin(request, env)
     const cors = origin ? {
       'Access-Control-Allow-Origin': origin,
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
       'Vary': 'Origin',
     } : {}
@@ -42,10 +42,6 @@ export default {
       return new Response(null, { status: origin ? 204 : 403, headers: cors })
     }
     if (!origin) return json({ error: 'Origin not allowed' }, 403)
-    if (new URL(request.url).pathname === '/country' && request.method === 'GET') {
-      const country = (request as Request & { cf?: { country?: string } }).cf?.country
-      return json({ country: typeof country === 'string' ? country.toUpperCase() : null }, country ? 200 : 503, cors)
-    }
     if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405, cors)
     if (!request.headers.get('content-type')?.includes('application/json')) {
       return json({ error: 'Expected application/json' }, 415, cors)
